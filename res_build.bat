@@ -4,8 +4,8 @@ set "win_kits_path=C:\Program Files\Windows Kits\8.0\bin\x86\"
 
 call "%vc_path%vcvarsall.bat" x86
 
-set "bin=Debug\"
-set "src=WinInfo\"
+set "bin=bin\"
+set "src=src\res\"
 set "progname=wininfo"
 
 :: http://www.computerhope.com/batch.htm 

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Express 2012 for Windows Desktop
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WinInfo", "WinInfo\WinInfo.vcxproj", "{87316E62-4378-44BE-BB50-8C2FA2AE66EC}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WinInfo", "WinInfo.vcxproj", "{87316E62-4378-44BE-BB50-8C2FA2AE66EC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

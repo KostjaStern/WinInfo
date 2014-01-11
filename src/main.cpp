@@ -18,23 +18,25 @@
 */
 
 #include "IWindow.h"
+#include "res\resource.h"
 
-// #include <windows.h>
 #include <windowsx.h>
 #include <commctrl.h>
 // #include <tchar.h>
 // #include <stdio.h>
 // #include <psapi.h>
 
-#include "resource.h"
+
 
 
 
 
 // http://msdn.microsoft.com/en-us/library/windows/desktop/ms646262%28v=vs.85%29.aspx (SetCapture function)
-static BOOL isMouseCapture = FALSE;
-static IWindow  *lastWnd = new IWindow();
-
+BOOL isMouseCapture = FALSE;
+IWindow  *lastWnd = new IWindow();
+HWND hTabControl = NULL;
+HWND hWndSummInfo = NULL;
+HWND hWndTreeInfo = NULL; // http://winapi.foosyerdoos.org.uk/code/commoncntrls/htm/createtreeview.php
 
 ATOM RegClass(HINSTANCE hInstance, LPTSTR lpszClassName);
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
@@ -65,7 +67,7 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE, PTSTR pszCmdLine, int nCmdS
 	HWND hMainWnd;
 	MSG  msg;
 	LPCTSTR   lpszWndClassName = _T("MainWndClass");
-	LPCTSTR   lpszAppName = _T("App name");
+	LPCTSTR   lpszAppName = _T("WinInfo");
 
 	if(!RegClass(hInstance, (LPTSTR)lpszWndClassName)){
 		MessageBox(NULL, _T("Cannot register class"), _T("Error"), MB_OK);
@@ -75,7 +77,7 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE, PTSTR pszCmdLine, int nCmdS
 	// init "Common Control Library"
 	INITCOMMONCONTROLSEX icc;
 	icc.dwSize = sizeof(INITCOMMONCONTROLSEX);
-	icc.dwICC  = ICC_WIN95_CLASSES;
+	icc.dwICC  = ICC_WIN95_CLASSES | ICC_TAB_CLASSES;
 	InitCommonControlsEx(&icc);
 
 
@@ -105,8 +107,45 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE, PTSTR pszCmdLine, int nCmdS
 
 	hMainWnd = CreateDialog(hInstance, MAKEINTRESOURCE(IDD_MAIN), NULL, NULL);
     SetWindowText(hMainWnd, lpszAppName);
+
+
+	hTabControl = GetDlgItem(hMainWnd, IDC_TAB1);
+	TCITEM ti;
+	ti.mask = TCIF_TEXT; // I'm only having text on the tab
+	ti.pszText = _T("Wnd Info");
+	TabCtrl_InsertItem(hTabControl, 0, &ti);
+    
+	ti.pszText = _T("All Windows");
+	TabCtrl_InsertItem(hTabControl, 1, &ti);
+	TabCtrl_SetCurSel(hTabControl, 0);
+
+	hWndSummInfo = CreateWindowEx(WS_EX_CONTROLPARENT,
+								 _T("Edit"),
+								 _T(""),
+								 WS_BORDER | WS_CHILD | WS_VISIBLE | WS_HSCROLL | WS_VSCROLL | ES_AUTOHSCROLL | ES_AUTOVSCROLL | ES_MULTILINE | ES_WANTRETURN | ES_READONLY,
+								 5, 30,       // x, y upper-left corner of the window relative to the upper-left corner of the parent window's client area.
+								 397, 283,    // nWidth , nHeight 
+								 hTabControl, // A handle to the parent or owner window of the window being created.
+								 NULL,        // For a child window, hMenu specifies the child-window identifier, an integer 
+									          // value used by a dialog box control to notify its parent about events. 
+									          // The application determines the child-window identifier; it must be unique for all child windows with the same parent window. 
+							     hInstance,
+								 NULL
+							);
+	// _tprintf(_T("hWndSummInfo = 0x%X\n"), hWndSummInfo);
+	if(hWndSummInfo == 0)
+	{
+		DWORD dwError = GetLastError();
+		_tprintf(_T("dwError = %i\n"), dwError);
+		PrintErrorMessage(dwError);
+	}
+
+
+
+
     ShowWindow(hMainWnd, nCmdShow);
-    // UpdateWindow(hMainWnd);
+    UpdateWindow(hMainWnd);
+	
 
 	// LPCTSTR   lpszTestText = _T("Test text message ...\nHello message .....");
 	// _tprintf(_T("hMainWnd = %X\n"), hMainWnd);
@@ -154,7 +193,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	RECT rect;
 	*/
 
-	HANDLE hWndEdit = GetDlgItem(hWnd, IDC_EDIT5);
+	// HANDLE hWndEdit = GetDlgItem(hWnd, IDC_EDIT1);
 	HANDLE hFinder  = GetDlgItem(hWnd, IDC_STATIC3);
 	
 
@@ -171,6 +210,37 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 	switch(uMsg)
 	{
+		case WM_CREATE:
+        {
+            _tprintf(_T("WM_CREATE\n"));
+			/*
+			LPCREATESTRUCT lpCreateStruct = reinterpret_cast<CREATESTRUCT*>(lParam);
+
+			// hCurrentTab = CreateDialog(hInstance, MAKEINTRESOURCE(IDD_TAB_ONE), hTabControl, NULL); 
+			hCurrentTab = CreateWindowEx(WS_EX_CONTROLPARENT,
+										 _T("EDIT"),
+										 _T(""),
+										 WS_CHILD | WS_DISABLED | WS_HSCROLL | WS_VSCROLL,
+										 5, 5, // x, y upper-left corner of the window relative to the upper-left corner of the parent window's client area.
+										 150, 50, // nWidth , nHeight 
+										 hTabControl, // A handle to the parent or owner window of the window being created.
+										 NULL, // For a child window, hMenu specifies the child-window identifier, an integer 
+											   // value used by a dialog box control to notify its parent about events. 
+											   // The application determines the child-window identifier; it must be unique for all child windows with the same parent window. 
+										lpCreateStruct->hInstance,
+										 NULL
+										);
+			if(hCurrentTab == 0)
+			{
+				DWORD dwError = GetLastError();
+				_tprintf(_T("dwError = %i\n"), dwError);
+				PrintErrorMessage(dwError);
+			}
+			_tprintf(_T("hCurrentTab = 0x%X\n"),  hCurrentTab);
+			*/
+        }
+		break;
+
 		case WM_LBUTTONUP:
 			if(isMouseCapture)
 			{
@@ -216,7 +286,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					delete lastWnd; //crash application ???
 					lastWnd = new IWindow(hSearchWnd);
 					// _tprintf(lastWnd->getWindowInfo());
-					 SetTextToEdit((HWND)hWndEdit, lastWnd->getWindowInfo());
+					 SetTextToEdit((HWND)hWndSummInfo, lastWnd->getWindowInfo());
 					 lastWnd->selectWindow();
 				}
 			}
@@ -247,11 +317,32 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		break;
 
 		case WM_NOTIFY:
-			// _tprintf(_T("WM_NOTIFY:  hWnd = %X , uMsg = %X , wParam = %X , lParam = %X\n"), hWnd, uMsg, wParam, lParam);
+		{
+			LPNMHDR lpNmHdr = (LPNMHDR)lParam;
+			/*
+			_tprintf(_T("lpNmHdr->code = %i\n"), lpNmHdr->code);
+			_tprintf(_T("lpNmHdr->hwndFrom = 0x%X\n"), lpNmHdr->hwndFrom);
+			_tprintf(_T("lpNmHdr->idFrom = %i\n"), lpNmHdr->idFrom);
+            _tprintf(_T("WM_NOTIFY:  hWnd = %X , uMsg = %X , wParam = %X , lParam = %X\n"), hWnd, uMsg, wParam, lParam);
+			*/
+			switch(lpNmHdr->code)
+			{
+				case TCN_SELCHANGING: // changed the tab selection (clicked on another tab)
+				{
+					int tabId = TabCtrl_GetCurSel(hTabControl);
+					
+					// _tprintf(_T("tabId = %i\n"), tabId);
+					if(tabId == 0){
+						ShowWindow(hWndSummInfo, SW_HIDE);
+					} else {
+						ShowWindow(hWndSummInfo, SW_SHOW);
+					}
+				}
+			}
+		}
 		break;
 
 		
-		//    http://msdn.microsoft.com/en-us/library/windows/desktop/ms647591%28v=vs.85%29.aspx (WM_COMMAND message)
 		case WM_COMMAND:
 
 			whwParam = HIWORD(wParam);
