@@ -404,9 +404,9 @@ void IWindow::setWindowExStyle(DWORD style)
 		wndInfoText->append(_T("    WS_EX_NOINHERITLAYOUT\r\n"));
 	}
 
-	if(style & WS_EX_NOREDIRECTIONBITMAP){
+	if(style & 0x00200000L){ // WS_EX_NOREDIRECTIONBITMAP => 0x00200000L
 		wndInfoText->append(_T("    WS_EX_NOREDIRECTIONBITMAP\r\n"));
-	}
+	} 
 
 	if(style & WS_EX_OVERLAPPEDWINDOW){
 		wndInfoText->append(_T("    WS_EX_OVERLAPPEDWINDOW\r\n"));
