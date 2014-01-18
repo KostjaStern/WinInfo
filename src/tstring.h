@@ -25,21 +25,21 @@
 #endif
 
 
-class tString
+class TString
 {
+    public:
+		TString();
+		TString(const TCHAR* str, ...);
+		~TString();
+		void append(const TCHAR* str, ...);
+		void append(const TCHAR* str, va_list args);
+		void append(TString str);
+		const TCHAR* getString() const { return string; }
+		int getStrLen() const { return length; }
+
     private:
 	    TCHAR* string;
 		int    length;
-
-    public:
-		tString();
-		tString(const TCHAR* str, ...);
-		~tString();
-		void append(const TCHAR* str, ...);
-		void append(const TCHAR* str, va_list args);
-		void append(tString str);
-		const TCHAR* getString();
-		int getStrLen();
 };
 
 

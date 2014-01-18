@@ -1,48 +1,30 @@
 
-/*
-   http://www.rsdn.ru/forum/winapi/1354633.all (Создание главного окна программы из ресурса, DLGWINDOWEXTRA)
-   http://msdn.microsoft.com/en-us/library/windows/desktop/hh298366%28v=vs.85%29.aspx (How to Create a Tabbed Dialog Box)  
 
-   http://msdn.microsoft.com/en-us/library/windows/desktop/aa366533%28v=vs.85%29.aspx (Comparing Memory Allocation Methods)
+#include "main.h"
 
-
-   HWND WINAPI GetDesktopWindow(void);
-   BOOL RedrawWindow(
-	  _In_  HWND hWnd,
-	  _In_  const RECT *lprcUpdate,
-	  _In_  HRGN hrgnUpdate,
-	  _In_  UINT flags
-  );
-
-
-*/
-
-#include "IWindow.h"
-#include "res\resource.h"
-
-#include <windowsx.h>
-#include <commctrl.h>
-// #include <tchar.h>
-// #include <stdio.h>
-// #include <psapi.h>
-
-
-
-
-
+#define WND_TREE_INFO_ID  234
 
 // http://msdn.microsoft.com/en-us/library/windows/desktop/ms646262%28v=vs.85%29.aspx (SetCapture function)
 BOOL isMouseCapture = FALSE;
-IWindow  *lastWnd = new IWindow();
+IWindow *lastWnd = NULL;
+
+TreeControl *treeWindows = NULL;
+
 HWND hTabControl = NULL;
 HWND hWndSummInfo = NULL;
-HWND hWndTreeInfo = NULL; // http://winapi.foosyerdoos.org.uk/code/commoncntrls/htm/createtreeview.php
+// TString *wndSummText = NULL;
+
+
+// http://www.codeguru.com/cpp/controls/treeview/misc-advanced/article.php/c3993/Using-TreeControl-TreeView-under-Win32-API-No-MFC.htm
+// http://winapi.foosyerdoos.org.uk/code/commoncntrls/htm/createtreeview.php
+HWND hWndTreeInfo = NULL; 
+
 
 ATOM RegClass(HINSTANCE hInstance, LPTSTR lpszClassName);
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 
-
-void SetTextToEdit(HWND hWnd, const TCHAR *text);
+void InitTree(HWND hwndTV);
+void SetTextToEdit(HWND hWnd, IWindow *wnd);
 
 // void AddTextToEdit(HWND hWnd, LPCTSTR format, ...);
 
@@ -82,22 +64,26 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE, PTSTR pszCmdLine, int nCmdS
 
 
     AllocConsole();	
+	FILE *hf = _fdopen( _open_osfhandle((long)GetStdHandle(STD_OUTPUT_HANDLE), _O_TEXT | _O_WTEXT), "w");
+    *stdout = *stderr = *hf;    /* enable using _tprintf  */
+
+	// Sleep(1000);
 	/*
-	tString *str = new tString();
+	TString *str = new TString();
 	str->append(_T("icc.dwSize = %i\n"), icc.dwSize);
 	str->append(_T("icc.dwSize = %i\n"), icc.dwSize);
 	str->append(_T("icc.dwICC = %i\n"),  icc.dwICC);
 	_tprintf(str->getString());
 	delete str;
-	*/
-	/*
-	delete lastWnd;
-	lastWnd = new IWindow((HWND)0x00030652);
-	// _tprintf(lastWnd->getWindowInfo());
+
+	
+	// delete lastWnd;
+	lastWnd = new IWindow((HWND)0x000405CA);
+	_tprintf(_T("lastWnd->getClassName() = %s\n"), lastWnd->getClassName());
 
 	delete lastWnd;
-	lastWnd = new IWindow((HWND)0x000405E8);
-	// _tprintf(lastWnd->getWindowInfo());
+	lastWnd = new IWindow((HWND)0x00010604);
+	_tprintf(_T("lastWnd->getClassName() = %s\n"), lastWnd->getClassName());
 	delete lastWnd;
 
 	// delete lastWnd;
@@ -120,18 +106,18 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE, PTSTR pszCmdLine, int nCmdS
 	TabCtrl_SetCurSel(hTabControl, 0);
 
 	hWndSummInfo = CreateWindowEx(WS_EX_CONTROLPARENT,
-								 _T("Edit"),
-								 _T(""),
-								 WS_BORDER | WS_CHILD | WS_VISIBLE | WS_HSCROLL | WS_VSCROLL | ES_AUTOHSCROLL | ES_AUTOVSCROLL | ES_MULTILINE | ES_WANTRETURN | ES_READONLY,
-								 5, 30,       // x, y upper-left corner of the window relative to the upper-left corner of the parent window's client area.
-								 397, 283,    // nWidth , nHeight 
-								 hTabControl, // A handle to the parent or owner window of the window being created.
-								 NULL,        // For a child window, hMenu specifies the child-window identifier, an integer 
+								  WC_EDIT,
+								  _T(""),
+								  WS_BORDER | WS_CHILD | WS_VISIBLE | WS_HSCROLL | WS_VSCROLL | ES_AUTOHSCROLL | ES_AUTOVSCROLL | ES_MULTILINE | ES_WANTRETURN | ES_READONLY,
+								  5, 30,       // x, y upper-left corner of the window relative to the upper-left corner of the parent window's client area.
+								  397, 283,    // nWidth , nHeight 
+								  hTabControl, // A handle to the parent or owner window of the window being created.
+								  NULL,        // For a child window, hMenu specifies the child-window identifier, an integer 
 									          // value used by a dialog box control to notify its parent about events. 
 									          // The application determines the child-window identifier; it must be unique for all child windows with the same parent window. 
-							     hInstance,
-								 NULL
-							);
+							      hInstance,
+								  NULL
+							    );
 	// _tprintf(_T("hWndSummInfo = 0x%X\n"), hWndSummInfo);
 	if(hWndSummInfo == 0)
 	{
@@ -141,10 +127,33 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE, PTSTR pszCmdLine, int nCmdS
 	}
 
 
+	hWndTreeInfo = CreateWindowEx(0,
+								  WC_TREEVIEW,
+								  _T(""),
+								  WS_BORDER | WS_CHILD | WS_HSCROLL | WS_VSCROLL | TVS_HASBUTTONS | TVS_LINESATROOT | TVS_HASLINES,
+								  5, 30,                    // x, y upper-left corner of the window relative to the upper-left corner of the parent window's client area.
+								  397, 283,                 // nWidth , nHeight 
+								  hTabControl,              // A handle to the parent or owner window of the window being created.
+								  (HMENU)WND_TREE_INFO_ID,  // For a child window, hMenu specifies the child-window identifier, an integer 
+									                        // value used by a dialog box control to notify its parent about events. 
+									                        // The application determines the child-window identifier; it must be unique for all child windows with the same parent window. 
+							      hInstance,
+								  NULL
+							     );
+	// treeWindows = new TreeControl(hWndTreeInfo);
 
+	// _tprintf(_T("hWndSummInfo = 0x%X\n"), hWndSummInfo);
+	if(hWndTreeInfo == 0)
+	{
+		DWORD dwError = GetLastError();
+		_tprintf(_T("dwError = %i\n"), dwError);
+		PrintErrorMessage(dwError);
+	}
+
+	InitTree(hWndTreeInfo);
 
     ShowWindow(hMainWnd, nCmdShow);
-    UpdateWindow(hMainWnd);
+    // UpdateWindow(hMainWnd);
 	
 
 	// LPCTSTR   lpszTestText = _T("Test text message ...\nHello message .....");
@@ -160,6 +169,9 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE, PTSTR pszCmdLine, int nCmdS
         DispatchMessage(&msg);
     }
 
+	_tprintf(_T("end prog ..."));
+	Sleep(1000);
+	FreeConsole();
     return (int)msg.wParam;
 
 //	return 0;
@@ -211,34 +223,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	switch(uMsg)
 	{
 		case WM_CREATE:
-        {
             _tprintf(_T("WM_CREATE\n"));
-			/*
-			LPCREATESTRUCT lpCreateStruct = reinterpret_cast<CREATESTRUCT*>(lParam);
 
-			// hCurrentTab = CreateDialog(hInstance, MAKEINTRESOURCE(IDD_TAB_ONE), hTabControl, NULL); 
-			hCurrentTab = CreateWindowEx(WS_EX_CONTROLPARENT,
-										 _T("EDIT"),
-										 _T(""),
-										 WS_CHILD | WS_DISABLED | WS_HSCROLL | WS_VSCROLL,
-										 5, 5, // x, y upper-left corner of the window relative to the upper-left corner of the parent window's client area.
-										 150, 50, // nWidth , nHeight 
-										 hTabControl, // A handle to the parent or owner window of the window being created.
-										 NULL, // For a child window, hMenu specifies the child-window identifier, an integer 
-											   // value used by a dialog box control to notify its parent about events. 
-											   // The application determines the child-window identifier; it must be unique for all child windows with the same parent window. 
-										lpCreateStruct->hInstance,
-										 NULL
-										);
-			if(hCurrentTab == 0)
-			{
-				DWORD dwError = GetLastError();
-				_tprintf(_T("dwError = %i\n"), dwError);
-				PrintErrorMessage(dwError);
-			}
-			_tprintf(_T("hCurrentTab = 0x%X\n"),  hCurrentTab);
-			*/
-        }
 		break;
 
 		case WM_LBUTTONUP:
@@ -272,22 +258,27 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 				hSearchWnd = WindowFromPoint(point);
 				
-				if(hSearchWnd != NULL  && hSearchWnd != lastWnd->getWindowHWND() )
+
+				if(hSearchWnd != NULL  && (lastWnd == NULL || (lastWnd != NULL && hSearchWnd != lastWnd->getHWND())))
 				{
-					// _tprintf(_T("hSearchWnd = 0x%X\n"), hSearchWnd);
 
+					_tprintf(_T("hSearchWnd = 0x%X\n"), hSearchWnd);
 
-
-					if(lastWnd->getWindowHWND() != NULL){
+					if(lastWnd != NULL){
+						_tprintf(_T("lastWnd->deselectWindow()\n"));
 						lastWnd->deselectWindow();
-						// GetWindowInfoByHWND(hLastWindow, (HWND)hWndEdit);
+
+						_tprintf(_T("delete lastWnd\n"));
+						delete lastWnd; 
 					}
 					
-					delete lastWnd; //crash application ???
+					_tprintf(_T("new IWindow(hSearchWnd)\n"));
 					lastWnd = new IWindow(hSearchWnd);
-					// _tprintf(lastWnd->getWindowInfo());
-					 SetTextToEdit((HWND)hWndSummInfo, lastWnd->getWindowInfo());
-					 lastWnd->selectWindow();
+					_tprintf(_T("lastWnd->getHWND() = 0x%X\n"), lastWnd->getHWND());
+
+					_tprintf(_T("SetTextToEdit\n"));
+					SetTextToEdit((HWND)hWndSummInfo, lastWnd);
+					lastWnd->selectWindow();
 				}
 			}
 
@@ -305,17 +296,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 		break;
 
-	    case WM_PAINT:
-			/*
-			hDC = BeginPaint(hWnd, &ps);
-
-			GetClientRect(hWnd, &rect);
-			DrawText(hDC, _T("Hello, Word!"), -1, &rect, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
-
-			EndPaint(hWnd, &ps);
-			*/
-		break;
-
 		case WM_NOTIFY:
 		{
 			LPNMHDR lpNmHdr = (LPNMHDR)lParam;
@@ -323,22 +303,52 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			_tprintf(_T("lpNmHdr->code = %i\n"), lpNmHdr->code);
 			_tprintf(_T("lpNmHdr->hwndFrom = 0x%X\n"), lpNmHdr->hwndFrom);
 			_tprintf(_T("lpNmHdr->idFrom = %i\n"), lpNmHdr->idFrom);
-            _tprintf(_T("WM_NOTIFY:  hWnd = %X , uMsg = %X , wParam = %X , lParam = %X\n"), hWnd, uMsg, wParam, lParam);
 			*/
-			switch(lpNmHdr->code)
+
+			// _tprintf(_T("hWndTreeInfo = 0x%X\n"), hWndTreeInfo);
+			// _tprintf(_T("hWnd = 0x%X\n"), hWnd);
+
+			switch(LOWORD(wParam))
 			{
-				case TCN_SELCHANGING: // changed the tab selection (clicked on another tab)
-				{
-					int tabId = TabCtrl_GetCurSel(hTabControl);
-					
-					// _tprintf(_T("tabId = %i\n"), tabId);
-					if(tabId == 0){
-						ShowWindow(hWndSummInfo, SW_HIDE);
-					} else {
-						ShowWindow(hWndSummInfo, SW_SHOW);
+			    case WND_TREE_INFO_ID:
+					switch(lpNmHdr->code)
+					{
+						case NM_CLICK:
+							_tprintf(_T("NM_CLICK\n"));
+
+							_tprintf(_T("hWndTreeInfo = 0x%X\n"), hWndTreeInfo);
+							_tprintf(_T("lpNmHdr->hwndFrom = 0x%X\n"), lpNmHdr->hwndFrom);
+							UpdateWindow(hWnd);
+						break;
+						case NM_DBLCLK:
+							_tprintf(_T("NM_DBLCLK\n"));
+						break;
+						case TVN_SELCHANGED:
+							_tprintf(_T("TVN_SELCHANGED\n"));
+						break;
 					}
-				}
+				break;
+
+				case IDC_TAB1:
+					switch(lpNmHdr->code)
+					{
+						case TCN_SELCHANGING: // changed the tab selection (clicked on another tab)
+						{
+							int tabId = TabCtrl_GetCurSel(hTabControl);
+					
+							_tprintf(_T("tabId = %i\n"), tabId);
+							if(tabId == 0){
+								ShowWindow(hWndSummInfo, SW_HIDE);
+								ShowWindow(hWndTreeInfo, SW_SHOW);
+							} else {
+								ShowWindow(hWndTreeInfo, SW_HIDE);
+								ShowWindow(hWndSummInfo, SW_SHOW);
+							}
+						}
+					}
+				break;
 			}
+
 		}
 		break;
 
@@ -394,10 +404,55 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-void SetTextToEdit(HWND hWnd, const TCHAR *text)
+void SetTextToEdit(HWND hWnd, IWindow *wnd)
 {
-	SendMessage(hWnd, WM_SETTEXT, 0, (LPARAM)text);
+	if(wnd == NULL) return;
+
+	TString *wndSummText = new TString();
+
+	wndSummText->append(_T(">>>> Root Window <<<<\r\n"));
+
+	IWindow *rootWnd = new IWindow(wnd->getRootHWND());
+	wndSummText->append(_T("Title: %s\r\n"), rootWnd->getText());
+	wndSummText->append(_T("Class: %s\r\n"), rootWnd->getClassName());
+	wndSummText->append(_T("Position: (left = %i, top = %i)\r\n"), rootWnd->getWndPos().x, rootWnd->getWndPos().y);
+	wndSummText->append(_T("Size: (width = %i, height = %i)\r\n"), rootWnd->getWidth(), rootWnd->getHeight());
+	wndSummText->append(_T("Style: 0x%X\r\n"), rootWnd->getStyle());
+	wndSummText->append(_T("ExStyle: 0x%X\r\n"), rootWnd->getExStyle());
+	wndSummText->append(_T("Handle: 0x%X\r\n"), rootWnd->getHWND());
+	wndSummText->append(_T("\r\n"));
+
+	
+	IWindow *parentWnd = new IWindow(wnd->getParentHWND());
+	wndSummText->append(_T(">>>> Parent Window <<<<\r\n"));
+	wndSummText->append(_T("Text: %s\r\n"), parentWnd->getText());
+	wndSummText->append(_T("Class: %s\r\n"), parentWnd->getClassName());
+	wndSummText->append(_T("Position: (left = %i, top = %i)\r\n"), parentWnd->getWndPos().x, parentWnd->getWndPos().y);
+	wndSummText->append(_T("Size: (width = %i, height = %i)\r\n"), parentWnd->getWidth(), parentWnd->getHeight());
+	wndSummText->append(_T("Style: 0x%X\r\n"), parentWnd->getStyle());
+	wndSummText->append(_T("ExStyle: 0x%X\r\n"), parentWnd->getExStyle());
+	wndSummText->append(_T("Handle: 0x%X\r\n"), parentWnd->getHWND());
+	wndSummText->append(_T("\r\n"));
+
+	wndSummText->append(_T(">>>> Control <<<<\r\n"));
+	wndSummText->append(_T("Text: %s\r\n"), wnd->getText());
+	wndSummText->append(_T("Class: %s\r\n"), wnd->getClassName());
+	wndSummText->append(_T("ID: %ld\r\n"), wnd->getID());
+	wndSummText->append(_T("Position: (left = %i, top = %i)\r\n"), wnd->getWndPos().x, wnd->getWndPos().y);
+	wndSummText->append(_T("Size: (width = %i, height = %i)\r\n"), wnd->getWidth(), wnd->getHeight());
+	wndSummText->append(_T("Style: 0x%X\r\n"), wnd->getStyle());
+	wndSummText->append(_T("ExStyle: 0x%X\r\n"), wnd->getExStyle());
+	wndSummText->append(_T("Handle: 0x%X\r\n"), wnd->getHWND());
+
+
+	_tprintf(wndSummText->getString());
+
+	SendMessage(hWnd, WM_SETTEXT, 0, (LPARAM)wndSummText->getString());
 	SendMessage(hWnd, WM_PAINT, 0, 0);
+
+	delete rootWnd;
+	delete parentWnd;
+	delete wndSummText;
 }
 
 
@@ -446,3 +501,93 @@ void PrintErrorMessage(DWORD dwError)
     }
 }
 
+
+// Adds items to a tree-view control. 
+// Returns the handle to the newly added item. 
+// hwndTV - handle to the tree-view control. 
+// lpszItem - text of the item to add. 
+// nLevel - level at which to add the item. 
+//
+// g_nClosed, and g_nDocument - global indexes of the images.
+
+void InitTree(HWND hwndTV)
+{
+	_tprintf(_T("InitTree\n"));
+
+    HTREEITEM hPrev = NULL; 
+    // HTREEITEM hPrevRootItem = NULL; 
+    // HTREEITEM hPrevLev2Item = NULL; 
+    // HTREEITEM hti; 
+
+    /* tvi.mask = TVIF_TEXT | TVIF_IMAGE 
+               | TVIF_SELECTEDIMAGE | TVIF_PARAM; */
+
+	TVITEM tvi; 
+    
+	tvi.mask = TVIF_TEXT | TVIF_PARAM | TVIF_CHILDREN;
+
+    // Set the text of the item. 
+    tvi.pszText = _T("Test 1"); 
+    tvi.cchTextMax = sizeof(tvi.pszText)/sizeof(tvi.pszText[0]); 
+	tvi.cChildren = 1;
+    tvi.lParam = 1; 
+
+	TVINSERTSTRUCT tvins; 
+    tvins.item = tvi; 
+    tvins.hInsertAfter = (HTREEITEM)TVI_FIRST; 
+	tvins.hParent = TVI_ROOT; 
+
+    
+
+    // Add the item to the tree-view control. 
+    hPrev = (HTREEITEM)SendMessage(hwndTV, TVM_INSERTITEM, 0, (LPARAM)(LPTVINSERTSTRUCT)&tvins); 
+
+    _tprintf(_T("hPrev = 0x%X\n"), hPrev);
+
+	TVITEM tvi1;
+	tvi1.mask = TVIF_TEXT | TVIF_PARAM;
+    tvi1.pszText = _T("Test 2"); 
+    tvi1.cchTextMax = sizeof(tvi.pszText)/sizeof(tvi.pszText[0]); 
+    tvi1.lParam = 2; 
+
+	TVINSERTSTRUCT tvins1; 
+    tvins1.item = tvi1; 
+    tvins1.hInsertAfter = (HTREEITEM)TVI_FIRST; 
+	tvins1.hParent = hPrev; // TVI_ROOT; 
+
+	HTREEITEM hPrev1 = (HTREEITEM)SendMessage(hwndTV, TVM_INSERTITEM, 0, (LPARAM)(LPTVINSERTSTRUCT)&tvins1);
+	_tprintf(_T("hPrev1 = 0x%X\n"), hPrev1);
+
+    return; 
+} 
+
+// Extracts heading text and heading levels from a global 
+// array and passes them to a function that adds them as
+// parent and child items to a tree-view control. 
+// Returns TRUE if successful, or FALSE otherwise. 
+// hwndTV - handle to the tree-view control. 
+/*
+BOOL InitTreeViewItems(HWND hwndTV)
+{ 
+    HTREEITEM hti;
+
+    // g_rgDocHeadings is an application-defined global array of 
+    // the following structures: 
+    //     typedef struct 
+    //       { 
+    //         TCHAR tchHeading[MAX_HEADING_LEN]; 
+    //         int tchLevel; 
+    //     } Heading; 
+    for (int i = 0; i < ARRAYSIZE(g_rgDocHeadings); i++) 
+    { 
+        // Add the item to the tree-view control. 
+        hti = AddItemToTree(hwndTV, g_rgDocHeadings[i].tchHeading, 
+            g_rgDocHeadings[i].tchLevel); 
+
+        if (hti == NULL)
+            return FALSE;
+    } 
+           
+    return TRUE; 
+}
+*/

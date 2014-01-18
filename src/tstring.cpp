@@ -1,19 +1,14 @@
 
 #include "tstring.h"
-// #include <windows.h>
 
-tString::tString()
+TString::TString()
 {
-//	_tprintf(_T("tString::tString()\n"));
-
 	string = new TCHAR[1];
 	string[0] = _T('\0');
 	length = 0;
-
-	// Sleep(1000);
 }
 
-void tString::append(const TCHAR* str, ...)
+void TString::append(const TCHAR* str, ...)
 {
 //	_tprintf(_T("tString::tString(const TCHAR* str, ...)\n"));
 	va_list args = NULL;
@@ -25,7 +20,7 @@ void tString::append(const TCHAR* str, ...)
 	return;
 }
 
-void tString::append(const TCHAR* str, va_list args)
+void TString::append(const TCHAR* str, va_list args)
 {
 //	_tprintf(_T("void tString::append(const TCHAR* str, va_list args) \n"));
 
@@ -54,7 +49,7 @@ void tString::append(const TCHAR* str, va_list args)
 	return;
 }
 
-void tString::append(tString str)
+void TString::append(TString str)
 {
 	if(length == 0)
 	{
@@ -75,7 +70,7 @@ void tString::append(tString str)
 	return;
 }
 
-tString::tString(const TCHAR* str, ...)
+TString::TString(const TCHAR* str, ...)
 {
 	length = 0;
 
@@ -88,20 +83,8 @@ tString::tString(const TCHAR* str, ...)
 	return;
 }
 
-tString::~tString()
+TString::~TString()
 {
-//	_tprintf(_T("tString::~tString()\n"));
 	delete [] string;
-	// Sleep(1000);
-}
-
-const TCHAR* tString::getString()
-{
-	return string;
-}
-
-int tString::getStrLen()
-{
-	return length;
 }
 

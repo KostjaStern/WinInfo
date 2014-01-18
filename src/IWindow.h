@@ -20,50 +20,60 @@
 
 class IWindow
 {
+	public:
+	    IWindow(HWND hWnd);
+		~IWindow();
+
+		void selectWindow();
+		void deselectWindow();
+
+		HWND  getHWND() const { return hWnd; }
+		HWND  getParentHWND() const { return hWndParent; }
+		HWND  getRootHWND() const { return hWndRoot; }
+
+		const TCHAR* getClassName() const { return className; }
+		const TCHAR* getRealClassName() const { return realClassName; }
+		const TCHAR* getText() const { return wndText; }
+		
+		int   getWidth() const { return wndWidth; }
+		int   getHeight() const { return wndHeight; }
+		LONG  getID() const { return wndID; }
+
+		DWORD  getProcessID() const { return dwProcessID; }
+		DWORD  getThreadID() const { return dwThreadID; }
+		const TCHAR* getExecutableFileName() const { return fileName; }
+
+		DWORD  getStyle() const { return wndInfo.dwStyle; }
+		DWORD  getExStyle() const { return wndInfo.dwExStyle; }
+		POINT  getWndPos() const { return wndPos; }
+
     private:
 		HWND    hWnd;
+		HWND    hWndParent;
+		HWND    hWndRoot;
+
+		LONG    wndID;     // the identifier of the window
+
 		RECT    wndRect;
+		POINT   wndPos;    /* left upper corner  */
 		int     wndWidth;
 		int     wndHeight;
-		HBITMAP hWndBitmap;
-		HDC     hWndDC;
-		HDC     hBufferDC;
 
 		TCHAR   *className;
 		TCHAR   *realClassName;
 
-		HWND    hWndRoot;
-		RECT    wndRootRect;
-		int     wndRootWidth;
-		int     wndRootHeight;
-		TCHAR   *rootClassName;
-		TCHAR   *rootRealClassName;
+		TCHAR   *wndText;
+		WINDOWINFO wndInfo;
 
 		DWORD   dwProcessID;
 	    DWORD   dwThreadID;
-		
+		TCHAR   *fileName;
 
-		TCHAR *wndText;
-		WINDOWINFO wndInfo;
+		/* uses for drawing and clearing the select rectangle */
+		HBITMAP hWndBitmap;
+		HDC     hWndDC;
+		HDC     hBufferDC;
 
-		TCHAR *rootWndTitle;
-		WINDOWINFO rootWndInfo;
-
-		TCHAR *fileName;
-
-		int wndCtrlID;
-		tString *wndInfoText;
-		void setWindowStyle(DWORD style);
-		void setWindowExStyle(DWORD style);
-
-    public:
-		IWindow();
-	    IWindow(HWND hWnd);
-		~IWindow();
-		void selectWindow();
-		void deselectWindow();
-		const TCHAR* getWindowInfo();
-		HWND  getWindowHWND();
 };
 
 #endif
