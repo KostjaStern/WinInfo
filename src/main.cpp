@@ -4,7 +4,12 @@
 
 #define WND_TREE_INFO_ID  234
 
-// http://msdn.microsoft.com/en-us/library/windows/desktop/ms646262%28v=vs.85%29.aspx (SetCapture function)
+/*
+ http://stackoverflow.com/questions/6689132/dll-dependencies-for-portable-c-c-application-for-windows (DLL dependencies for portable C/C++ application for Windows)
+
+ http://msdn.microsoft.com/en-us/library/windows/desktop/ms646262%28v=vs.85%29.aspx (SetCapture function)
+
+*/
 BOOL isMouseCapture = FALSE;
 IWindow *lastWnd = NULL;
 
@@ -22,27 +27,17 @@ HWND hWndTreeInfo = NULL;
 
 ATOM RegClass(HINSTANCE hInstance, LPTSTR lpszClassName);
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
+BOOL CALLBACK CtrlInfoDialogProc(HWND, UINT, WPARAM, LPARAM);
 
-void InitTree(HWND hwndTV);
-void SetTextToEdit(HWND hWnd, IWindow *wnd);
+
 
 // void AddTextToEdit(HWND hWnd, LPCTSTR format, ...);
 
-
+void SetTextToEdit(HWND hWnd, IWindow *wnd);
 TCHAR* GetTextFromEdit(HWND hWnd);
 
-/*
-void SelectWindow(HWND hWnd);
-void DeselectWindow(HWND hWnd);
-*/
 
-void PrintErrorMessage(DWORD code);
 
-/*
-void GetWindowInfoByHWND(HWND hWnd, HWND hEdit);
-void PrintWindowStyle(HWND hEdit, DWORD style);
-void PrintWindowStyleEx(HWND hEdit, DWORD style);
-*/
 
 int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE, PTSTR pszCmdLine, int nCmdShow)
 {
@@ -64,7 +59,11 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE, PTSTR pszCmdLine, int nCmdS
 
 
     AllocConsole();	
-	FILE *hf = _fdopen( _open_osfhandle((long)GetStdHandle(STD_OUTPUT_HANDLE), _O_TEXT | _O_WTEXT), "w");
+	FILE *hf;
+	hf = _fdopen( _open_osfhandle((long)GetStdHandle(STD_OUTPUT_HANDLE), _O_TEXT | _O_WTEXT), "w");
+	// hf = fopen("E:\\debug.txt", "a+");
+	// fopen_s(&hf, "E:\\debug.txt", "a+");
+
     *stdout = *stderr = *hf;    /* enable using _tprintf  */
 
 	// Sleep(1000);
@@ -90,6 +89,50 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE, PTSTR pszCmdLine, int nCmdS
 	_tprintf(_T("End ...\n"));
 	Sleep(15000);
 	*/
+
+/***********************
+	HWND test = GetAncestor((HWND)0x0001059E, GA_PARENT);
+	HWND test1 = GetAncestor((HWND)0x0001059E, GA_ROOT);
+	HWND test2 = GetAncestor((HWND)0x0001059E, GA_ROOTOWNER);
+	_tprintf(_T("GA_PARENT = 0x%X\n"), test);
+	_tprintf(_T("GA_ROOT = 0x%X\n"), test1);
+	test1 = GetAncestor(test1, GA_ROOT);
+	_tprintf(_T("GA_ROOT(GA_ROOT) = 0x%X\n"), test1);
+
+	_tprintf(_T("GA_ROOTOWNER = 0x%X\n"), test2);
+	test2 = GetAncestor(test2, GA_ROOTOWNER);
+	_tprintf(_T("GA_ROOTOWNER(GA_ROOTOWNER) = 0x%X\n"), test2);
+
+	IWindow *iWnd = new IWindow(test);
+
+	_tprintf(_T("hWnd = 0x%X\n"), iWnd->getHWND());
+	_tprintf(_T("Class = %s\n"), iWnd->getClassName());
+	_tprintf(_T("Text = %s\n"), iWnd->getText());
+	_tprintf(_T("Exe file = %s\n"), iWnd->getExecutableFileName());
+	_tprintf(_T("=======================\n"));
+
+	delete iWnd;
+
+	for(int i = 0; i < 10; i++)
+	{
+		test = GetAncestor(test, GA_PARENT);
+
+		if(test == NULL){
+			break;
+		}
+
+		iWnd = new IWindow(test);
+
+		_tprintf(_T("hWnd = 0x%X\n"), iWnd->getHWND());
+		_tprintf(_T("Class = %s\n"), iWnd->getClassName());
+		_tprintf(_T("Text = %s\n"), iWnd->getText());
+		_tprintf(_T("Exe file = %s\n"), iWnd->getExecutableFileName());
+		_tprintf(_T("=======================\n"));
+
+		delete iWnd;
+	}
+********************************/
+
 
 	hMainWnd = CreateDialog(hInstance, MAKEINTRESOURCE(IDD_MAIN), NULL, NULL);
     SetWindowText(hMainWnd, lpszAppName);
@@ -123,7 +166,7 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE, PTSTR pszCmdLine, int nCmdS
 	{
 		DWORD dwError = GetLastError();
 		_tprintf(_T("dwError = %i\n"), dwError);
-		PrintErrorMessage(dwError);
+		Helper::printErrorMessage(dwError);
 	}
 
 
@@ -140,17 +183,17 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE, PTSTR pszCmdLine, int nCmdS
 							      hInstance,
 								  NULL
 							     );
-	// treeWindows = new TreeControl(hWndTreeInfo);
 
 	// _tprintf(_T("hWndSummInfo = 0x%X\n"), hWndSummInfo);
 	if(hWndTreeInfo == 0)
 	{
 		DWORD dwError = GetLastError();
 		_tprintf(_T("dwError = %i\n"), dwError);
-		PrintErrorMessage(dwError);
+		Helper::printErrorMessage(dwError);
 	}
 
-	InitTree(hWndTreeInfo);
+	treeWindows = new TreeControl(hWndTreeInfo);
+	// InitTree(hWndTreeInfo);
 
     ShowWindow(hMainWnd, nCmdShow);
     // UpdateWindow(hMainWnd);
@@ -170,11 +213,12 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE, PTSTR pszCmdLine, int nCmdS
     }
 
 	_tprintf(_T("end prog ..."));
-	Sleep(1000);
+	Sleep(2000);
 	FreeConsole();
+
     return (int)msg.wParam;
 
-//	return 0;
+	// return 0;
 }
 
 ATOM RegClass(HINSTANCE hInstance, LPTSTR lpszClassName)
@@ -233,7 +277,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				if(!ReleaseCapture()){
 					dwError = GetLastError();
 				    _tprintf(_T("ReleaseCapture: dwError = %i\n"), dwError);
-				    PrintErrorMessage(dwError);
+				    Helper::printErrorMessage(dwError);
 				}
 				isMouseCapture = FALSE;
 			}
@@ -253,15 +297,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				if(!GetCursorPos(&point)){
 					dwError = GetLastError();
 				    _tprintf(_T("GetCursorPos: dwError = %i\n"), dwError);
-				    PrintErrorMessage(dwError);
+				    Helper::printErrorMessage(dwError);
 				}
 
 				hSearchWnd = WindowFromPoint(point);
 				
 
-				if(hSearchWnd != NULL  && (lastWnd == NULL || (lastWnd != NULL && hSearchWnd != lastWnd->getHWND())))
+				if(hSearchWnd != NULL  && (lastWnd == NULL || hSearchWnd != lastWnd->getHWND()))
 				{
-
 					_tprintf(_T("hSearchWnd = 0x%X\n"), hSearchWnd);
 
 					if(lastWnd != NULL){
@@ -314,14 +357,31 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					switch(lpNmHdr->code)
 					{
 						case NM_CLICK:
+							/*
 							_tprintf(_T("NM_CLICK\n"));
 
 							_tprintf(_T("hWndTreeInfo = 0x%X\n"), hWndTreeInfo);
 							_tprintf(_T("lpNmHdr->hwndFrom = 0x%X\n"), lpNmHdr->hwndFrom);
-							UpdateWindow(hWnd);
+							*/
 						break;
 						case NM_DBLCLK:
+						{
 							_tprintf(_T("NM_DBLCLK\n"));
+
+							// HTREEITEM item = TreeView_GetSelection(lpNmHdr->hwndFrom);
+							TVITEM tvItem;
+                            tvItem.mask = TVIF_PARAM | TVIF_HANDLE;
+							tvItem.hItem = TreeView_GetSelection(lpNmHdr->hwndFrom);
+
+							TreeView_GetItem(lpNmHdr->hwndFrom, &tvItem);
+							HWND hSelWnd = (HWND)tvItem.lParam;
+							_tprintf(_T("hSelWnd = 0x%X\n"), hSelWnd);
+
+
+							// hPopupCtrlInfo = CreateDialog(hInstance, MAKEINTRESOURCE(IDD_CONTROL_INFO), hMainWnd, DialogProc);
+							DialogBoxParam(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_CONTROL_INFO), hWnd, CtrlInfoDialogProc, (LPARAM)hSelWnd);
+
+						}
 						break;
 						case TVN_SELCHANGED:
 							_tprintf(_T("TVN_SELCHANGED\n"));
@@ -358,7 +418,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			whwParam = HIWORD(wParam);
 			wlwParam = LOWORD(wParam);
 
-			// _tprintf(_T("WM_COMMAND:  hWnd = %X , uMsg = %X , whwParam = %X , wlwParam = %X , lParam = %X\n"), hWnd, uMsg, whwParam, wlwParam, lParam);
+			_tprintf(_T("WM_COMMAND:  hWnd = %X , uMsg = %X , whwParam = %X , wlwParam = %X , lParam = %X\n"), hWnd, uMsg, whwParam, wlwParam, lParam);
 
 			// click in finder tool
 			if(hFinder == (HANDLE)lParam){
@@ -402,6 +462,52 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	}
 
 	return 0;
+}
+
+
+BOOL CALLBACK CtrlInfoDialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	switch (uMsg) 
+    { 
+	    case WM_INITDIALOG:
+	    {	
+			_tprintf(_T("WM_INITDIALOG\n"));
+			_tprintf(_T("hwndDlg = 0x%X\n"), hwndDlg);
+			_tprintf(_T("lParam = 0x%X\n"), lParam);
+			_tprintf(_T("\n"));
+
+			HWND hPopupEdit = GetDlgItem(hwndDlg, IDC_EDIT1);
+			IWindow *wndInfo = new IWindow((HWND)lParam);
+			SetTextToEdit(hPopupEdit, wndInfo);
+
+			// ShowWindow(hPopupCtrlInfo, SW_SHOW);
+			delete wndInfo;
+
+
+            SetFocus(hPopupEdit); 
+            return FALSE; 
+
+		}
+		break;
+
+	    case WM_COMMAND:
+			switch(LOWORD(wParam))
+			{
+			    case IDCANCEL:
+					EndDialog(hwndDlg, 0);
+					return TRUE;
+				break;
+			}
+
+			// _tprintf(_T("CtrlInfoDialogProc: WM_COMMAND\n"));
+			// EndDialog(hwndDlg, 0);
+			return FALSE;
+		break;
+
+        // Place message cases here. 
+        default: 
+            return FALSE; 
+    } 
 }
 
 void SetTextToEdit(HWND hWnd, IWindow *wnd)
@@ -469,125 +575,5 @@ TCHAR* GetTextFromEdit(HWND hWnd)
 	return buffer;
 }
 
-void PrintErrorMessage(DWORD dwError)
-{
-    HLOCAL hlocal = NULL;
-    DWORD systemLocale = MAKELANGID(LANG_ENGLISH, SUBLANG_DEFAULT);
-
-    BOOL fOk = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_ALLOCATE_BUFFER, 
-                             NULL, dwError, systemLocale, (PTSTR) &hlocal, 0, NULL);
-
-    if (!fOk) 
-	{
-        // Is it a network-related error?
-        HMODULE hDll = LoadLibraryEx(TEXT("netmsg.dll"), NULL, 
-            DONT_RESOLVE_DLL_REFERENCES);
-
-        if (hDll != NULL) {
-            fOk = FormatMessage(
-               FORMAT_MESSAGE_FROM_HMODULE | FORMAT_MESSAGE_IGNORE_INSERTS |
-               FORMAT_MESSAGE_ALLOCATE_BUFFER,
-               hDll, dwError, systemLocale,
-               (PTSTR) &hlocal, 0, NULL);
-            FreeLibrary(hDll);
-        }
-    }
-
-    if (fOk && (hlocal != NULL)) {
-        _tprintf(_T("%s\n"), (LPTSTR)hlocal);
-        LocalFree(hlocal);
-    } else {
-		_tprintf(_T("%s\n"), _T("No text found for this error number."));
-    }
-}
 
 
-// Adds items to a tree-view control. 
-// Returns the handle to the newly added item. 
-// hwndTV - handle to the tree-view control. 
-// lpszItem - text of the item to add. 
-// nLevel - level at which to add the item. 
-//
-// g_nClosed, and g_nDocument - global indexes of the images.
-
-void InitTree(HWND hwndTV)
-{
-	_tprintf(_T("InitTree\n"));
-
-    HTREEITEM hPrev = NULL; 
-    // HTREEITEM hPrevRootItem = NULL; 
-    // HTREEITEM hPrevLev2Item = NULL; 
-    // HTREEITEM hti; 
-
-    /* tvi.mask = TVIF_TEXT | TVIF_IMAGE 
-               | TVIF_SELECTEDIMAGE | TVIF_PARAM; */
-
-	TVITEM tvi; 
-    
-	tvi.mask = TVIF_TEXT | TVIF_PARAM | TVIF_CHILDREN;
-
-    // Set the text of the item. 
-    tvi.pszText = _T("Test 1"); 
-    tvi.cchTextMax = sizeof(tvi.pszText)/sizeof(tvi.pszText[0]); 
-	tvi.cChildren = 1;
-    tvi.lParam = 1; 
-
-	TVINSERTSTRUCT tvins; 
-    tvins.item = tvi; 
-    tvins.hInsertAfter = (HTREEITEM)TVI_FIRST; 
-	tvins.hParent = TVI_ROOT; 
-
-    
-
-    // Add the item to the tree-view control. 
-    hPrev = (HTREEITEM)SendMessage(hwndTV, TVM_INSERTITEM, 0, (LPARAM)(LPTVINSERTSTRUCT)&tvins); 
-
-    _tprintf(_T("hPrev = 0x%X\n"), hPrev);
-
-	TVITEM tvi1;
-	tvi1.mask = TVIF_TEXT | TVIF_PARAM;
-    tvi1.pszText = _T("Test 2"); 
-    tvi1.cchTextMax = sizeof(tvi.pszText)/sizeof(tvi.pszText[0]); 
-    tvi1.lParam = 2; 
-
-	TVINSERTSTRUCT tvins1; 
-    tvins1.item = tvi1; 
-    tvins1.hInsertAfter = (HTREEITEM)TVI_FIRST; 
-	tvins1.hParent = hPrev; // TVI_ROOT; 
-
-	HTREEITEM hPrev1 = (HTREEITEM)SendMessage(hwndTV, TVM_INSERTITEM, 0, (LPARAM)(LPTVINSERTSTRUCT)&tvins1);
-	_tprintf(_T("hPrev1 = 0x%X\n"), hPrev1);
-
-    return; 
-} 
-
-// Extracts heading text and heading levels from a global 
-// array and passes them to a function that adds them as
-// parent and child items to a tree-view control. 
-// Returns TRUE if successful, or FALSE otherwise. 
-// hwndTV - handle to the tree-view control. 
-/*
-BOOL InitTreeViewItems(HWND hwndTV)
-{ 
-    HTREEITEM hti;
-
-    // g_rgDocHeadings is an application-defined global array of 
-    // the following structures: 
-    //     typedef struct 
-    //       { 
-    //         TCHAR tchHeading[MAX_HEADING_LEN]; 
-    //         int tchLevel; 
-    //     } Heading; 
-    for (int i = 0; i < ARRAYSIZE(g_rgDocHeadings); i++) 
-    { 
-        // Add the item to the tree-view control. 
-        hti = AddItemToTree(hwndTV, g_rgDocHeadings[i].tchHeading, 
-            g_rgDocHeadings[i].tchLevel); 
-
-        if (hti == NULL)
-            return FALSE;
-    } 
-           
-    return TRUE; 
-}
-*/

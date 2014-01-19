@@ -68,12 +68,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Helper.cpp" />
     <ClCompile Include="src\IWindow.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\TreeControl.cpp" />
     <ClCompile Include="src\tstring.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Helper.h" />
     <ClInclude Include="src\IWindow.h" />
     <ClInclude Include="src\main.h" />
     <ClInclude Include="src\res\resource.h" />

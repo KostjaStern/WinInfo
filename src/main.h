@@ -2,6 +2,8 @@
 
 
 #include "res\resource.h"
+#include "Helper.h"
+
 #include "IWindow.h"
 #include "TreeControl.h"
 

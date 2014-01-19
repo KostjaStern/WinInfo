@@ -11,8 +11,8 @@ IWindow::IWindow(HWND hWnd)
 	hWndRoot   = GetAncestor(hWnd, GA_ROOT);
 	hWndParent = GetAncestor(hWnd, GA_PARENT);
 	
-	_tprintf(_T("hWndRoot = 0x%X\n"), hWndRoot);
-	_tprintf(_T("hWndParent = 0x%X\n"), hWndParent);
+	// _tprintf(_T("hWndRoot = 0x%X\n"), hWndRoot);
+	// _tprintf(_T("hWndParent = 0x%X\n"), hWndParent);
 
 	int strLen = 0;
 
