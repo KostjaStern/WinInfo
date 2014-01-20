@@ -7,6 +7,7 @@
 #define IDD_TAB_ONE                             109
 #define IDD_TAB_TWO                             111
 #define IDD_CONTROL_INFO                        113
+#define IDC_BUTTON1                             1000
 #define IDC_TAB1                                1000
 #define IDC_STATIC1                             1002
 #define IDC_EDIT1                               1003

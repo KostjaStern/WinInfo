@@ -2,7 +2,9 @@
 
 #include "main.h"
 
-#define WND_TREE_INFO_ID  234
+#define WND_SUMM_INFO_ID  2001
+#define WND_TREE_INFO_ID  2002
+
 
 /*
  http://stackoverflow.com/questions/6689132/dll-dependencies-for-portable-c-c-application-for-windows (DLL dependencies for portable C/C++ application for Windows)
@@ -13,7 +15,7 @@
 BOOL isMouseCapture = FALSE;
 IWindow *lastWnd = NULL;
 
-TreeControl *treeWindows = NULL;
+// TreeControl *treeWindows = NULL;
 
 HWND hTabControl = NULL;
 HWND hWndSummInfo = NULL;
@@ -28,7 +30,7 @@ HWND hWndTreeInfo = NULL;
 ATOM RegClass(HINSTANCE hInstance, LPTSTR lpszClassName);
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 BOOL CALLBACK CtrlInfoDialogProc(HWND, UINT, WPARAM, LPARAM);
-
+BOOL initGUI(HWND hWnd);
 
 
 // void AddTextToEdit(HWND hWnd, LPCTSTR format, ...);
@@ -66,134 +68,20 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE, PTSTR pszCmdLine, int nCmdS
 
     *stdout = *stderr = *hf;    /* enable using _tprintf  */
 
-	// Sleep(1000);
-	/*
-	TString *str = new TString();
-	str->append(_T("icc.dwSize = %i\n"), icc.dwSize);
-	str->append(_T("icc.dwSize = %i\n"), icc.dwSize);
-	str->append(_T("icc.dwICC = %i\n"),  icc.dwICC);
-	_tprintf(str->getString());
-	delete str;
-
-	
-	// delete lastWnd;
-	lastWnd = new IWindow((HWND)0x000405CA);
-	_tprintf(_T("lastWnd->getClassName() = %s\n"), lastWnd->getClassName());
-
-	delete lastWnd;
-	lastWnd = new IWindow((HWND)0x00010604);
-	_tprintf(_T("lastWnd->getClassName() = %s\n"), lastWnd->getClassName());
-	delete lastWnd;
-
-	// delete lastWnd;
-	_tprintf(_T("End ...\n"));
-	Sleep(15000);
-	*/
-
-/***********************
-	HWND test = GetAncestor((HWND)0x0001059E, GA_PARENT);
-	HWND test1 = GetAncestor((HWND)0x0001059E, GA_ROOT);
-	HWND test2 = GetAncestor((HWND)0x0001059E, GA_ROOTOWNER);
-	_tprintf(_T("GA_PARENT = 0x%X\n"), test);
-	_tprintf(_T("GA_ROOT = 0x%X\n"), test1);
-	test1 = GetAncestor(test1, GA_ROOT);
-	_tprintf(_T("GA_ROOT(GA_ROOT) = 0x%X\n"), test1);
-
-	_tprintf(_T("GA_ROOTOWNER = 0x%X\n"), test2);
-	test2 = GetAncestor(test2, GA_ROOTOWNER);
-	_tprintf(_T("GA_ROOTOWNER(GA_ROOTOWNER) = 0x%X\n"), test2);
-
-	IWindow *iWnd = new IWindow(test);
-
-	_tprintf(_T("hWnd = 0x%X\n"), iWnd->getHWND());
-	_tprintf(_T("Class = %s\n"), iWnd->getClassName());
-	_tprintf(_T("Text = %s\n"), iWnd->getText());
-	_tprintf(_T("Exe file = %s\n"), iWnd->getExecutableFileName());
-	_tprintf(_T("=======================\n"));
-
-	delete iWnd;
-
-	for(int i = 0; i < 10; i++)
-	{
-		test = GetAncestor(test, GA_PARENT);
-
-		if(test == NULL){
-			break;
-		}
-
-		iWnd = new IWindow(test);
-
-		_tprintf(_T("hWnd = 0x%X\n"), iWnd->getHWND());
-		_tprintf(_T("Class = %s\n"), iWnd->getClassName());
-		_tprintf(_T("Text = %s\n"), iWnd->getText());
-		_tprintf(_T("Exe file = %s\n"), iWnd->getExecutableFileName());
-		_tprintf(_T("=======================\n"));
-
-		delete iWnd;
-	}
-********************************/
-
 
 	hMainWnd = CreateDialog(hInstance, MAKEINTRESOURCE(IDD_MAIN), NULL, NULL);
+
+	if(hMainWnd == 0){
+		DWORD dwError = GetLastError();
+		_tprintf(_T("hMainWnd: dwError = %i\n"), dwError);
+		Helper::printErrorMessage(dwError);
+		return 1;
+	}
+
     SetWindowText(hMainWnd, lpszAppName);
+	
+	initGUI(hMainWnd);
 
-
-	hTabControl = GetDlgItem(hMainWnd, IDC_TAB1);
-	TCITEM ti;
-	ti.mask = TCIF_TEXT; // I'm only having text on the tab
-	ti.pszText = _T("Wnd Info");
-	TabCtrl_InsertItem(hTabControl, 0, &ti);
-    
-	ti.pszText = _T("All Windows");
-	TabCtrl_InsertItem(hTabControl, 1, &ti);
-	TabCtrl_SetCurSel(hTabControl, 0);
-
-	hWndSummInfo = CreateWindowEx(WS_EX_CONTROLPARENT,
-								  WC_EDIT,
-								  _T(""),
-								  WS_BORDER | WS_CHILD | WS_VISIBLE | WS_HSCROLL | WS_VSCROLL | ES_AUTOHSCROLL | ES_AUTOVSCROLL | ES_MULTILINE | ES_WANTRETURN | ES_READONLY,
-								  5, 30,       // x, y upper-left corner of the window relative to the upper-left corner of the parent window's client area.
-								  397, 283,    // nWidth , nHeight 
-								  hTabControl, // A handle to the parent or owner window of the window being created.
-								  NULL,        // For a child window, hMenu specifies the child-window identifier, an integer 
-									          // value used by a dialog box control to notify its parent about events. 
-									          // The application determines the child-window identifier; it must be unique for all child windows with the same parent window. 
-							      hInstance,
-								  NULL
-							    );
-	// _tprintf(_T("hWndSummInfo = 0x%X\n"), hWndSummInfo);
-	if(hWndSummInfo == 0)
-	{
-		DWORD dwError = GetLastError();
-		_tprintf(_T("dwError = %i\n"), dwError);
-		Helper::printErrorMessage(dwError);
-	}
-
-
-	hWndTreeInfo = CreateWindowEx(0,
-								  WC_TREEVIEW,
-								  _T(""),
-								  WS_BORDER | WS_CHILD | WS_HSCROLL | WS_VSCROLL | TVS_HASBUTTONS | TVS_LINESATROOT | TVS_HASLINES,
-								  5, 30,                    // x, y upper-left corner of the window relative to the upper-left corner of the parent window's client area.
-								  397, 283,                 // nWidth , nHeight 
-								  hTabControl,              // A handle to the parent or owner window of the window being created.
-								  (HMENU)WND_TREE_INFO_ID,  // For a child window, hMenu specifies the child-window identifier, an integer 
-									                        // value used by a dialog box control to notify its parent about events. 
-									                        // The application determines the child-window identifier; it must be unique for all child windows with the same parent window. 
-							      hInstance,
-								  NULL
-							     );
-
-	// _tprintf(_T("hWndSummInfo = 0x%X\n"), hWndSummInfo);
-	if(hWndTreeInfo == 0)
-	{
-		DWORD dwError = GetLastError();
-		_tprintf(_T("dwError = %i\n"), dwError);
-		Helper::printErrorMessage(dwError);
-	}
-
-	treeWindows = new TreeControl(hWndTreeInfo);
-	// InitTree(hWndTreeInfo);
 
     ShowWindow(hMainWnd, nCmdShow);
     // UpdateWindow(hMainWnd);
@@ -212,8 +100,8 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE, PTSTR pszCmdLine, int nCmdS
         DispatchMessage(&msg);
     }
 
-	_tprintf(_T("end prog ..."));
-	Sleep(2000);
+//	_tprintf(_T("end prog ..."));
+//	Sleep(2000);
 	FreeConsole();
 
     return (int)msg.wParam;
@@ -320,7 +208,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					_tprintf(_T("lastWnd->getHWND() = 0x%X\n"), lastWnd->getHWND());
 
 					_tprintf(_T("SetTextToEdit\n"));
-					SetTextToEdit((HWND)hWndSummInfo, lastWnd);
+
+					// _tprintf(_T("hWndSummInfo = 0x%X\n"), hWndSummInfo);
+					// _tprintf(_T("hWndSummInfo1 = 0x%X\n"), GetDlgItem(hWnd, WND_SUMM_INFO_ID));
+					
+					Helper::SetTextToEdit(hWndSummInfo, lastWnd->getHWND());
+					// SetTextToEdit((HWND)hWndSummInfo, lastWnd);
 					lastWnd->selectWindow();
 				}
 			}
@@ -389,12 +282,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					}
 				break;
 
-				case IDC_TAB1:
+				case IDC_TAB1: // tab control
+
+					// _tprintf(_T("hTabControl = 0x%X\n"), hTabControl);
+					// _tprintf(_T("lpNmHdr->hwndFrom = 0x%X\n"), lpNmHdr->hwndFrom);
+
 					switch(lpNmHdr->code)
 					{
 						case TCN_SELCHANGING: // changed the tab selection (clicked on another tab)
 						{
-							int tabId = TabCtrl_GetCurSel(hTabControl);
+							int tabId = TabCtrl_GetCurSel(lpNmHdr->hwndFrom);
 					
 							_tprintf(_T("tabId = %i\n"), tabId);
 							if(tabId == 0){
@@ -477,12 +374,12 @@ BOOL CALLBACK CtrlInfoDialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 			_tprintf(_T("\n"));
 
 			HWND hPopupEdit = GetDlgItem(hwndDlg, IDC_EDIT1);
-			IWindow *wndInfo = new IWindow((HWND)lParam);
-			SetTextToEdit(hPopupEdit, wndInfo);
+			// IWindow *wndInfo = new IWindow((HWND)lParam);
+			// SetTextToEdit(hPopupEdit, wndInfo);
 
 			// ShowWindow(hPopupCtrlInfo, SW_SHOW);
-			delete wndInfo;
-
+			// delete wndInfo;
+			Helper::SetTextToEdit(hPopupEdit, (HWND)lParam);
 
             SetFocus(hPopupEdit); 
             return FALSE; 
@@ -576,4 +473,65 @@ TCHAR* GetTextFromEdit(HWND hWnd)
 }
 
 
+BOOL initGUI(HWND hWnd)
+{
+	hTabControl = GetDlgItem(hWnd, IDC_TAB1);
+	TCITEM ti;
+	ti.mask = TCIF_TEXT; // I'm only having text on the tab
+	ti.pszText = _T("Wnd Info");
+	TabCtrl_InsertItem(hTabControl, 0, &ti);
+    
+	ti.pszText = _T("All Windows");
+	TabCtrl_InsertItem(hTabControl, 1, &ti);
+	TabCtrl_SetCurSel(hTabControl, 0);
 
+	_tprintf(_T("hTabControl = 0x%X\n"), hTabControl);
+
+	hWndSummInfo = CreateWindowEx(WS_EX_CONTROLPARENT,
+								  WC_EDIT,
+								  _T(""),
+								  WS_BORDER | WS_CHILD | WS_VISIBLE | WS_HSCROLL | WS_VSCROLL | ES_AUTOHSCROLL | ES_AUTOVSCROLL | ES_MULTILINE | ES_WANTRETURN | ES_READONLY,
+								  5, 30,       // x, y upper-left corner of the window relative to the upper-left corner of the parent window's client area.
+								  397, 283,    // nWidth , nHeight 
+								  hTabControl, // A handle to the parent or owner window of the window being created.
+								  (HMENU)WND_SUMM_INFO_ID,  // For a child window, hMenu specifies the child-window identifier, an integer 
+									          // value used by a dialog box control to notify its parent about events. 
+									          // The application determines the child-window identifier; it must be unique for all child windows with the same parent window. 
+							      GetModuleHandle(NULL),
+								  NULL
+							    );
+	// _tprintf(_T("hWndSummInfo = 0x%X\n"), hWndSummInfo);
+	if(hWndSummInfo == 0)
+	{
+		DWORD dwError = GetLastError();
+		_tprintf(_T("hWndSummInfo: dwError = %i\n"), dwError);
+		Helper::printErrorMessage(dwError);
+		return FALSE;
+	}
+
+	hWndTreeInfo = CreateWindowEx(0,
+								  WC_TREEVIEW,
+								  _T(""),
+								  WS_BORDER | WS_CHILD | WS_HSCROLL | WS_VSCROLL | TVS_HASBUTTONS | TVS_LINESATROOT | TVS_HASLINES, /* WS_CHILD   */
+								  5, 30,                    // x, y upper-left corner of the window relative to the upper-left corner of the parent window's client area.
+								  397, 283,                 // nWidth , nHeight 
+								  hTabControl,              // A handle to the parent or owner window of the window being created.
+								  (HMENU)WND_TREE_INFO_ID,  // For a child window, hMenu specifies the child-window identifier, an integer 
+									                        // value used by a dialog box control to notify its parent about events. 
+									                        // The application determines the child-window identifier; it must be unique for all child windows with the same parent window. 
+							      GetModuleHandle(NULL),
+								  NULL
+							     );
+
+	_tprintf(_T("hWndTreeInfo = 0x%X\n"), hWndTreeInfo);
+	if(hWndTreeInfo == 0)
+	{
+		DWORD dwError = GetLastError();
+		_tprintf(_T("hWndTreeInfo: dwError = %i\n"), dwError);
+		Helper::printErrorMessage(dwError);
+		return FALSE;
+	}
+
+	TreeControl treeWindows(hWndTreeInfo);
+	return TRUE;
+}
