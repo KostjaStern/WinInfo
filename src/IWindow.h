@@ -4,13 +4,14 @@
     http://msdn.microsoft.com/en-us/library/windows/desktop/ms633584%28v=vs.85%29.aspx           (GetWindowLong function)
 */
 
-#ifndef IWINDOW_H_
-#define IWINDOW_H_
+#pragma once
 
 #include <windows.h>
 #include <psapi.h>
 
+#include "HPrint.h"
 #include "tstring.h"
+
 
 // http://msdn.microsoft.com/en-us/library/windows/desktop/ms633577%28v=vs.85%29.aspx (WNDCLASSEX structure)
 // The maximum length for lpszClassName is 256. 
@@ -41,7 +42,6 @@ class IWindow
 
 		DWORD  getProcessID() const { return dwProcessID; }
 		DWORD  getThreadID() const { return dwThreadID; }
-		const TCHAR* getExecutableFileName() const { return fileName; }
 
 		DWORD  getStyle() const { return wndInfo.dwStyle; }
 		DWORD  getExStyle() const { return wndInfo.dwExStyle; }
@@ -67,13 +67,10 @@ class IWindow
 
 		DWORD   dwProcessID;
 	    DWORD   dwThreadID;
-		TCHAR   *fileName;
 
 		/* uses for drawing and clearing the select rectangle */
 		HBITMAP hWndBitmap;
 		HDC     hWndDC;
 		HDC     hBufferDC;
-
 };
 
-#endif

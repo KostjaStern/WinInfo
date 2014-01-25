@@ -1,19 +1,21 @@
 
-#ifndef HELPER_H_
-#define HELPER_H_
+#pragma once
+
 
 #include <windows.h>
 #include <tchar.h>
 #include <stdio.h>
 
 #include "tstring.h"
+#include "ProcessInfo.h"
 #include "IWindow.h"
+#include "TreeControl.h"
 
 class Helper
 {
     public:
-		static void printErrorMessage(DWORD dwError);
-		static void SetTextToEdit(HWND hWndOutput, HWND hWnd);
+		static void SetTextToEdit(HWND hWndOutput, TreeItem* treeTtem);
+		static void SetTextToEdit(HWND hWndOutput, IWindow* wnd);
 
     private:
 		static void addStyleInfo(DWORD style, TString *text);
@@ -21,4 +23,3 @@ class Helper
 };
 
 
-#endif

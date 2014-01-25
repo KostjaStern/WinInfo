@@ -6,36 +6,23 @@
 #define WND_TREE_INFO_ID  2002
 
 
-/*
- http://stackoverflow.com/questions/6689132/dll-dependencies-for-portable-c-c-application-for-windows (DLL dependencies for portable C/C++ application for Windows)
 
- http://msdn.microsoft.com/en-us/library/windows/desktop/ms646262%28v=vs.85%29.aspx (SetCapture function)
-
-*/
+// static variables
 BOOL isMouseCapture = FALSE;
 IWindow *lastWnd = NULL;
-
-// TreeControl *treeWindows = NULL;
+TreeControl *treeWindows = NULL;
 
 HWND hTabControl = NULL;
 HWND hWndSummInfo = NULL;
-// TString *wndSummText = NULL;
-
-
-// http://www.codeguru.com/cpp/controls/treeview/misc-advanced/article.php/c3993/Using-TreeControl-TreeView-under-Win32-API-No-MFC.htm
-// http://winapi.foosyerdoos.org.uk/code/commoncntrls/htm/createtreeview.php
 HWND hWndTreeInfo = NULL; 
 
 
 ATOM RegClass(HINSTANCE hInstance, LPTSTR lpszClassName);
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 BOOL CALLBACK CtrlInfoDialogProc(HWND, UINT, WPARAM, LPARAM);
+BOOL CALLBACK ProcessInfoDialogProc(HWND, UINT, WPARAM, LPARAM);
 BOOL initGUI(HWND hWnd);
 
-
-// void AddTextToEdit(HWND hWnd, LPCTSTR format, ...);
-
-void SetTextToEdit(HWND hWnd, IWindow *wnd);
 TCHAR* GetTextFromEdit(HWND hWnd);
 
 
@@ -46,7 +33,15 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE, PTSTR pszCmdLine, int nCmdS
 	HWND hMainWnd;
 	MSG  msg;
 	LPCTSTR   lpszWndClassName = _T("MainWndClass");
-	LPCTSTR   lpszAppName = _T("WinInfo");
+	// LPCTSTR   lpszAppName = _T("WinInfo");
+
+	// Enabling the debug privilege allows the application to see
+    // information about service applications
+    CToolhelp::EnablePrivilege(SE_DEBUG_NAME, TRUE);
+   
+    // To get access to SACL.
+    CToolhelp::EnablePrivilege(SE_SECURITY_NAME, TRUE);     
+
 
 	if(!RegClass(hInstance, (LPTSTR)lpszWndClassName)){
 		MessageBox(NULL, _T("Cannot register class"), _T("Error"), MB_OK);
@@ -74,11 +69,11 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE, PTSTR pszCmdLine, int nCmdS
 	if(hMainWnd == 0){
 		DWORD dwError = GetLastError();
 		_tprintf(_T("hMainWnd: dwError = %i\n"), dwError);
-		Helper::printErrorMessage(dwError);
+		HPrint::printErrorMessage(dwError);
 		return 1;
 	}
 
-    SetWindowText(hMainWnd, lpszAppName);
+    // SetWindowText(hMainWnd, lpszAppName);
 	
 	initGUI(hMainWnd);
 
@@ -102,7 +97,14 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE, PTSTR pszCmdLine, int nCmdS
 
 //	_tprintf(_T("end prog ..."));
 //	Sleep(2000);
+
+	if(treeWindows != NULL){
+	    delete treeWindows;
+	}
+
 	FreeConsole();
+	CToolhelp::EnablePrivilege(SE_SECURITY_NAME, FALSE);     
+    CToolhelp::EnablePrivilege(SE_DEBUG_NAME, FALSE);
 
     return (int)msg.wParam;
 
@@ -131,32 +133,13 @@ ATOM RegClass(HINSTANCE hInstance, LPTSTR lpszClassName)
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	/*
-	HDC hDC;
-	PAINTSTRUCT ps;
-	RECT rect;
-	*/
-
-	// HANDLE hWndEdit = GetDlgItem(hWnd, IDC_EDIT1);
-	HANDLE hFinder  = GetDlgItem(hWnd, IDC_STATIC3);
-	
-
-	// const int BUFF_SIZE = 200;
-	// TCHAR     buffer[BUFF_SIZE];
-
-	// TCHAR *buffer;
-
 	DWORD dwError;
-	WORD whwParam, wlwParam;
-	// int xPos, yPos;
-	POINT point;
-	HWND  hSearchWnd;
+
 
 	switch(uMsg)
 	{
 		case WM_CREATE:
             _tprintf(_T("WM_CREATE\n"));
-
 		break;
 
 		case WM_LBUTTONUP:
@@ -165,7 +148,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				if(!ReleaseCapture()){
 					dwError = GetLastError();
 				    _tprintf(_T("ReleaseCapture: dwError = %i\n"), dwError);
-				    Helper::printErrorMessage(dwError);
+				    HPrint::printErrorMessage(dwError);
 				}
 				isMouseCapture = FALSE;
 			}
@@ -174,18 +157,21 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 		// case WM_LBUTTONDOWN:
 	    case WM_MOUSEMOVE:
+		{
 			// The coordinate is relative to the upper-left corner of the client area. 
 			// http://msdn.microsoft.com/en-us/library/windows/desktop/ms645616%28v=vs.85%29.aspx (WM_MOUSEMOVE message)
 			// xPos = GET_X_LPARAM(lParam); 
             // yPos = GET_Y_LPARAM(lParam); 
 			// _tprintf(_T("isMouseCapture = %i\n"), isMouseCapture);
+			POINT point;
+			HWND  hSearchWnd;
 
 			if(isMouseCapture)
 			{
 				if(!GetCursorPos(&point)){
 					dwError = GetLastError();
 				    _tprintf(_T("GetCursorPos: dwError = %i\n"), dwError);
-				    Helper::printErrorMessage(dwError);
+				    HPrint::printErrorMessage(dwError);
 				}
 
 				hSearchWnd = WindowFromPoint(point);
@@ -206,14 +192,26 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					_tprintf(_T("new IWindow(hSearchWnd)\n"));
 					lastWnd = new IWindow(hSearchWnd);
 					_tprintf(_T("lastWnd->getHWND() = 0x%X\n"), lastWnd->getHWND());
-
 					_tprintf(_T("SetTextToEdit\n"));
 
 					// _tprintf(_T("hWndSummInfo = 0x%X\n"), hWndSummInfo);
 					// _tprintf(_T("hWndSummInfo1 = 0x%X\n"), GetDlgItem(hWnd, WND_SUMM_INFO_ID));
-					
-					Helper::SetTextToEdit(hWndSummInfo, lastWnd->getHWND());
-					// SetTextToEdit((HWND)hWndSummInfo, lastWnd);
+					IWindow rootWnd(lastWnd->getRootHWND());
+					HWND hRootTitle = GetDlgItem(hWnd, IDC_EDIT1);
+					HWND hRootClass = GetDlgItem(hWnd, IDC_EDIT2);
+					SendMessage(hRootTitle, WM_SETTEXT, 0, (LPARAM)rootWnd.getText());
+					SendMessage(hRootClass, WM_SETTEXT, 0, (LPARAM)rootWnd.getClassName());
+
+					HWND hCtrlClass = GetDlgItem(hWnd, IDC_EDIT3);
+					HWND hCtrlInst  = GetDlgItem(hWnd, IDC_EDIT4);
+					SendMessage(hCtrlClass, WM_SETTEXT, 0, (LPARAM)lastWnd->getClassName());
+
+					TString ctrlID;
+					ctrlID.append(_T("%i"), lastWnd->getID());
+					SendMessage(hCtrlInst, WM_SETTEXT, 0, (LPARAM)ctrlID.getString());
+
+
+					Helper::SetTextToEdit(hWndSummInfo, lastWnd);
 					lastWnd->selectWindow();
 				}
 			}
@@ -229,7 +227,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				_tprintf(_T("dwError = %s\n"), dwError);
 			}
 			*/
-
+		}
 		break;
 
 		case WM_NOTIFY:
@@ -261,19 +259,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 						{
 							_tprintf(_T("NM_DBLCLK\n"));
 
-							// HTREEITEM item = TreeView_GetSelection(lpNmHdr->hwndFrom);
-							TVITEM tvItem;
-                            tvItem.mask = TVIF_PARAM | TVIF_HANDLE;
-							tvItem.hItem = TreeView_GetSelection(lpNmHdr->hwndFrom);
+							if(treeWindows != NULL)
+							{
+								TreeItem treeItem = treeWindows->getSelectedItem();
 
-							TreeView_GetItem(lpNmHdr->hwndFrom, &tvItem);
-							HWND hSelWnd = (HWND)tvItem.lParam;
-							_tprintf(_T("hSelWnd = 0x%X\n"), hSelWnd);
-
-
-							// hPopupCtrlInfo = CreateDialog(hInstance, MAKEINTRESOURCE(IDD_CONTROL_INFO), hMainWnd, DialogProc);
-							DialogBoxParam(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_CONTROL_INFO), hWnd, CtrlInfoDialogProc, (LPARAM)hSelWnd);
-
+								if(treeItem.type == PROCESS){
+								    DialogBoxParam(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_PROCESS_INFO), hWnd, ProcessInfoDialogProc, (LPARAM)&treeItem);
+								}
+								else {
+									DialogBoxParam(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_CONTROL_INFO), hWnd, CtrlInfoDialogProc, (LPARAM)&treeItem);
+								}
+							}
 						}
 						break;
 						case TVN_SELCHANGED:
@@ -311,11 +307,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 		
 		case WM_COMMAND:
-
+		{
+			WORD whwParam, wlwParam;
 			whwParam = HIWORD(wParam);
 			wlwParam = LOWORD(wParam);
 
 			_tprintf(_T("WM_COMMAND:  hWnd = %X , uMsg = %X , whwParam = %X , wlwParam = %X , lParam = %X\n"), hWnd, uMsg, whwParam, wlwParam, lParam);
+
+			HANDLE hFinder  = GetDlgItem(hWnd, IDC_STATIC3);
 
 			// click in finder tool
 			if(hFinder == (HANDLE)lParam){
@@ -343,6 +342,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					break;
 				}
 			}
+		}
 		break;
 		
 		case WM_CLOSE:
@@ -379,7 +379,8 @@ BOOL CALLBACK CtrlInfoDialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 
 			// ShowWindow(hPopupCtrlInfo, SW_SHOW);
 			// delete wndInfo;
-			Helper::SetTextToEdit(hPopupEdit, (HWND)lParam);
+
+			Helper::SetTextToEdit(hPopupEdit, (TreeItem*)lParam);
 
             SetFocus(hPopupEdit); 
             return FALSE; 
@@ -407,55 +408,51 @@ BOOL CALLBACK CtrlInfoDialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
     } 
 }
 
-void SetTextToEdit(HWND hWnd, IWindow *wnd)
+
+BOOL CALLBACK ProcessInfoDialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	if(wnd == NULL) return;
+	switch (uMsg) 
+    { 
+	    case WM_INITDIALOG:
+	    {	
+			_tprintf(_T("WM_INITDIALOG\n"));
+			_tprintf(_T("hwndDlg = 0x%X\n"), hwndDlg);
+			_tprintf(_T("lParam = 0x%X\n"), lParam);
+			_tprintf(_T("\n"));
 
-	TString *wndSummText = new TString();
+			HWND hPopupEdit = GetDlgItem(hwndDlg, IDC_EDIT1);
+			// IWindow *wndInfo = new IWindow((HWND)lParam);
+			// SetTextToEdit(hPopupEdit, wndInfo);
 
-	wndSummText->append(_T(">>>> Root Window <<<<\r\n"));
+			// ShowWindow(hPopupCtrlInfo, SW_SHOW);
+			// delete wndInfo;
 
-	IWindow *rootWnd = new IWindow(wnd->getRootHWND());
-	wndSummText->append(_T("Title: %s\r\n"), rootWnd->getText());
-	wndSummText->append(_T("Class: %s\r\n"), rootWnd->getClassName());
-	wndSummText->append(_T("Position: (left = %i, top = %i)\r\n"), rootWnd->getWndPos().x, rootWnd->getWndPos().y);
-	wndSummText->append(_T("Size: (width = %i, height = %i)\r\n"), rootWnd->getWidth(), rootWnd->getHeight());
-	wndSummText->append(_T("Style: 0x%X\r\n"), rootWnd->getStyle());
-	wndSummText->append(_T("ExStyle: 0x%X\r\n"), rootWnd->getExStyle());
-	wndSummText->append(_T("Handle: 0x%X\r\n"), rootWnd->getHWND());
-	wndSummText->append(_T("\r\n"));
+			Helper::SetTextToEdit(hPopupEdit, (TreeItem*)lParam);
 
-	
-	IWindow *parentWnd = new IWindow(wnd->getParentHWND());
-	wndSummText->append(_T(">>>> Parent Window <<<<\r\n"));
-	wndSummText->append(_T("Text: %s\r\n"), parentWnd->getText());
-	wndSummText->append(_T("Class: %s\r\n"), parentWnd->getClassName());
-	wndSummText->append(_T("Position: (left = %i, top = %i)\r\n"), parentWnd->getWndPos().x, parentWnd->getWndPos().y);
-	wndSummText->append(_T("Size: (width = %i, height = %i)\r\n"), parentWnd->getWidth(), parentWnd->getHeight());
-	wndSummText->append(_T("Style: 0x%X\r\n"), parentWnd->getStyle());
-	wndSummText->append(_T("ExStyle: 0x%X\r\n"), parentWnd->getExStyle());
-	wndSummText->append(_T("Handle: 0x%X\r\n"), parentWnd->getHWND());
-	wndSummText->append(_T("\r\n"));
+            SetFocus(hPopupEdit); 
+            return FALSE; 
 
-	wndSummText->append(_T(">>>> Control <<<<\r\n"));
-	wndSummText->append(_T("Text: %s\r\n"), wnd->getText());
-	wndSummText->append(_T("Class: %s\r\n"), wnd->getClassName());
-	wndSummText->append(_T("ID: %ld\r\n"), wnd->getID());
-	wndSummText->append(_T("Position: (left = %i, top = %i)\r\n"), wnd->getWndPos().x, wnd->getWndPos().y);
-	wndSummText->append(_T("Size: (width = %i, height = %i)\r\n"), wnd->getWidth(), wnd->getHeight());
-	wndSummText->append(_T("Style: 0x%X\r\n"), wnd->getStyle());
-	wndSummText->append(_T("ExStyle: 0x%X\r\n"), wnd->getExStyle());
-	wndSummText->append(_T("Handle: 0x%X\r\n"), wnd->getHWND());
+		}
+		break;
 
+	    case WM_COMMAND:
+			switch(LOWORD(wParam))
+			{
+			    case IDCANCEL:
+					EndDialog(hwndDlg, 0);
+					return TRUE;
+				break;
+			}
 
-	_tprintf(wndSummText->getString());
+			// _tprintf(_T("CtrlInfoDialogProc: WM_COMMAND\n"));
+			// EndDialog(hwndDlg, 0);
+			return FALSE;
+		break;
 
-	SendMessage(hWnd, WM_SETTEXT, 0, (LPARAM)wndSummText->getString());
-	SendMessage(hWnd, WM_PAINT, 0, 0);
-
-	delete rootWnd;
-	delete parentWnd;
-	delete wndSummText;
+        // Place message cases here. 
+        default: 
+            return FALSE; 
+    } 
 }
 
 
@@ -505,7 +502,7 @@ BOOL initGUI(HWND hWnd)
 	{
 		DWORD dwError = GetLastError();
 		_tprintf(_T("hWndSummInfo: dwError = %i\n"), dwError);
-		Helper::printErrorMessage(dwError);
+		HPrint::printErrorMessage(dwError);
 		return FALSE;
 	}
 
@@ -528,10 +525,12 @@ BOOL initGUI(HWND hWnd)
 	{
 		DWORD dwError = GetLastError();
 		_tprintf(_T("hWndTreeInfo: dwError = %i\n"), dwError);
-		Helper::printErrorMessage(dwError);
+		HPrint::printErrorMessage(dwError);
 		return FALSE;
 	}
 
-	TreeControl treeWindows(hWndTreeInfo);
+
+	treeWindows = new TreeControl(hWndTreeInfo);
+	treeWindows->reBuildTree();
 	return TRUE;
 }

@@ -2,6 +2,10 @@
 
 
 #include "res\resource.h"
+
+#include "jeff\Toolhelp.h"
+
+#include "HPrint.h"
 #include "Helper.h"
 
 #include "IWindow.h"

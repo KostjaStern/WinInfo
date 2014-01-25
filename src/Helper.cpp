@@ -2,74 +2,48 @@
 #include "Helper.h"
 
 
-void Helper::printErrorMessage(DWORD dwError)
+void Helper::SetTextToEdit(HWND hWndOutput, IWindow* wnd)
 {
-	HLOCAL hlocal = NULL;
-    DWORD systemLocale = MAKELANGID(LANG_ENGLISH, SUBLANG_DEFAULT);
-
-    BOOL fOk = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_ALLOCATE_BUFFER, 
-                             NULL, dwError, systemLocale, (PTSTR) &hlocal, 0, NULL);
-
-    if (!fOk) 
-	{
-        // Is it a network-related error?
-        HMODULE hDll = LoadLibraryEx(TEXT("netmsg.dll"), NULL, 
-            DONT_RESOLVE_DLL_REFERENCES);
-
-        if (hDll != NULL) {
-            fOk = FormatMessage(
-               FORMAT_MESSAGE_FROM_HMODULE | FORMAT_MESSAGE_IGNORE_INSERTS |
-               FORMAT_MESSAGE_ALLOCATE_BUFFER,
-               hDll, dwError, systemLocale,
-               (PTSTR) &hlocal, 0, NULL);
-            FreeLibrary(hDll);
-        }
-    }
-
-    if (fOk && (hlocal != NULL)) {
-        _tprintf(_T("%s\n"), (LPTSTR)hlocal);
-        LocalFree(hlocal);
-    } else {
-		_tprintf(_T("%s\n"), _T("No text found for this error number."));
-    }
-}
-
-
-
-void Helper::SetTextToEdit(HWND hWndOutput, HWND hWnd)
-{
-	if(hWnd == NULL) return;
-	IWindow *wnd = new IWindow(hWnd);
+	if(wnd == NULL) return;
 
 	TString *wndSummText = new TString();
 
-	wndSummText->append(_T(">>>> Root Window <<<<\r\n"));
+	if(wnd->getRootHWND() != NULL)
+	{
+		wndSummText->append(_T(">>>> Root Window <<<<\r\n"));
 
-	IWindow *rootWnd = new IWindow(wnd->getRootHWND());
-	wndSummText->append(_T("Title: %s\r\n"), rootWnd->getText());
-	wndSummText->append(_T("Class: %s\r\n"), rootWnd->getClassName());
-	wndSummText->append(_T("Position: (left = %i, top = %i)\r\n"), rootWnd->getWndPos().x, rootWnd->getWndPos().y);
-	wndSummText->append(_T("Size: (width = %i, height = %i)\r\n"), rootWnd->getWidth(), rootWnd->getHeight());
-	wndSummText->append(_T("Style: 0x%X\r\n"), rootWnd->getStyle());
-	Helper::addStyleInfo(rootWnd->getStyle(), wndSummText);
-	wndSummText->append(_T("ExStyle: 0x%X\r\n"), rootWnd->getExStyle());
-	Helper::addStyleExInfo(rootWnd->getExStyle(), wndSummText);
-	wndSummText->append(_T("Handle: 0x%X\r\n"), rootWnd->getHWND());
-	wndSummText->append(_T("\r\n"));
+		IWindow *rootWnd = new IWindow(wnd->getRootHWND());
+		wndSummText->append(_T("Title: %s\r\n"), rootWnd->getText());
+		wndSummText->append(_T("Class: %s\r\n"), rootWnd->getClassName());
+		wndSummText->append(_T("Position: (left = %i, top = %i)\r\n"), rootWnd->getWndPos().x, rootWnd->getWndPos().y);
+		wndSummText->append(_T("Size: (width = %i, height = %i)\r\n"), rootWnd->getWidth(), rootWnd->getHeight());
+		wndSummText->append(_T("Style: 0x%X\r\n"), rootWnd->getStyle());
+		Helper::addStyleInfo(rootWnd->getStyle(), wndSummText);
+		wndSummText->append(_T("ExStyle: 0x%X\r\n"), rootWnd->getExStyle());
+		Helper::addStyleExInfo(rootWnd->getExStyle(), wndSummText);
+		wndSummText->append(_T("Handle: 0x%X\r\n"), rootWnd->getHWND());
+		wndSummText->append(_T("\r\n"));
 
+		delete rootWnd;
+	}
 	
-	IWindow *parentWnd = new IWindow(wnd->getParentHWND());
-	wndSummText->append(_T(">>>> Parent Window <<<<\r\n"));
-	wndSummText->append(_T("Text: %s\r\n"), parentWnd->getText());
-	wndSummText->append(_T("Class: %s\r\n"), parentWnd->getClassName());
-	wndSummText->append(_T("Position: (left = %i, top = %i)\r\n"), parentWnd->getWndPos().x, parentWnd->getWndPos().y);
-	wndSummText->append(_T("Size: (width = %i, height = %i)\r\n"), parentWnd->getWidth(), parentWnd->getHeight());
-	wndSummText->append(_T("Style: 0x%X\r\n"), parentWnd->getStyle());
-	Helper::addStyleInfo(parentWnd->getStyle(), wndSummText);
-	wndSummText->append(_T("ExStyle: 0x%X\r\n"), parentWnd->getExStyle());
-	Helper::addStyleExInfo(parentWnd->getExStyle(), wndSummText);
-	wndSummText->append(_T("Handle: 0x%X\r\n"), parentWnd->getHWND());
-	wndSummText->append(_T("\r\n"));
+	if(wnd->getParentHWND() != NULL && wnd->getParentHWND() != wnd->getRootHWND())
+	{
+		IWindow *parentWnd = new IWindow(wnd->getParentHWND());
+		wndSummText->append(_T(">>>> Parent Window <<<<\r\n"));
+		wndSummText->append(_T("Text: %s\r\n"), parentWnd->getText());
+		wndSummText->append(_T("Class: %s\r\n"), parentWnd->getClassName());
+		wndSummText->append(_T("Position: (left = %i, top = %i)\r\n"), parentWnd->getWndPos().x, parentWnd->getWndPos().y);
+		wndSummText->append(_T("Size: (width = %i, height = %i)\r\n"), parentWnd->getWidth(), parentWnd->getHeight());
+		wndSummText->append(_T("Style: 0x%X\r\n"), parentWnd->getStyle());
+		Helper::addStyleInfo(parentWnd->getStyle(), wndSummText);
+		wndSummText->append(_T("ExStyle: 0x%X\r\n"), parentWnd->getExStyle());
+		Helper::addStyleExInfo(parentWnd->getExStyle(), wndSummText);
+		wndSummText->append(_T("Handle: 0x%X\r\n"), parentWnd->getHWND());
+		wndSummText->append(_T("\r\n"));
+
+		delete parentWnd;
+	}
 
 	wndSummText->append(_T(">>>> Control <<<<\r\n"));
 	wndSummText->append(_T("Text: %s\r\n"), wnd->getText());
@@ -86,17 +60,41 @@ void Helper::SetTextToEdit(HWND hWndOutput, HWND hWnd)
 	wndSummText->append(_T("\r\n"));
 	wndSummText->append(_T("ThreadID: %i\r\n"), wnd->getThreadID());
 	wndSummText->append(_T("ProcessID: %i\r\n"), wnd->getProcessID());
-	wndSummText->append(_T("FileName: %s\r\n"), wnd->getExecutableFileName());
-
-	_tprintf(wndSummText->getString());
 
 	SendMessage(hWndOutput, WM_SETTEXT, 0, (LPARAM)wndSummText->getString());
-	SendMessage(hWndOutput, WM_PAINT, 0, 0);
-
-	delete wnd;
-	delete rootWnd;
-	delete parentWnd;
+	// SendMessage(hWndOutput, WM_PAINT, 0, 0);
 	delete wndSummText;
+}
+
+void Helper::SetTextToEdit(HWND hWndOutput, TreeItem* treeTtem)
+{
+	if(treeTtem == NULL) return;
+
+	switch(treeTtem->type)
+	{
+	    case PROCESS:
+		{
+			TString *wndSummText = new TString();
+			ProcessInfo *processInfo = new ProcessInfo((DWORD)treeTtem->vItem);
+			wndSummText->append(_T("PID: %i\r\n"), processInfo->getPID());
+			wndSummText->append(_T("Cmd: %s %s\r\n"), processInfo->getFileName(), processInfo->getCmdParams());
+
+			delete processInfo;
+
+			SendMessage(hWndOutput, WM_SETTEXT, 0, (LPARAM)wndSummText->getString());
+	        SendMessage(hWndOutput, WM_PAINT, 0, 0);
+			delete wndSummText;
+		}
+		break;
+
+		case WINDOW:
+		case ROOTWINDOW:
+		{
+			IWindow *wnd = new IWindow((HWND)treeTtem->vItem);
+		    SetTextToEdit(hWndOutput, wnd);
+			delete wnd;
+		}
+	}
 }
 
 

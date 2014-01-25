@@ -1,87 +1,12 @@
 
 #include "TreeControl.h"
-#include "IWindow.h"
-#include "tstring.h"
+
 
 TreeControl::TreeControl(HWND hWnd)
 {
 	this->hWnd = hWnd;
 
 	_tprintf(_T("TreeControl: hwnd = 0x%X\n"), hWnd);
-
-	if(!EnumChildWindows(NULL, addWndHandle, (LPARAM)this)){
-		DWORD dwError = GetLastError();
-		_tprintf(_T("dwError = %i\n"), dwError);
-		Helper::printErrorMessage(dwError);
-	}
-
-	_tprintf(_T("hwndTree.size() = %i\n"), hwndTree.size());
-	
-	BOOL res = addParentChildPairsToWndTree();
-	_tprintf(_T("res = %i\n"), res);
-	_tprintf(_T("hwndTree.size() = %i\n"), hwndTree.size());
-
-	_tprintf(_T("hwndTree.count(0) = %i\n"), hwndTree.count(0));
-	
-	buildTree(0, NULL);
-
-/*
-    HTREEITEM hPrev = NULL; 
-    // HTREEITEM hPrevRootItem = NULL; 
-    // HTREEITEM hPrevLev2Item = NULL; 
-    // HTREEITEM hti; 
-
-    // tvi.mask = TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM; 
-
-	TVITEM tvi; 
-	tvi.mask = TVIF_TEXT | TVIF_PARAM | TVIF_CHILDREN;
-    tvi.pszText = _T("Test 1\nhello ...\nkostja"); 
-    tvi.cchTextMax = sizeof(tvi.pszText)/sizeof(tvi.pszText[0]); 
-	tvi.cChildren = 1;
-    tvi.lParam = 1; 
-
-	TVINSERTSTRUCT tvins; 
-    tvins.item = tvi; 
-    tvins.hInsertAfter = (HTREEITEM)TVI_LAST; 
-	tvins.hParent = TVI_ROOT; 
-
-    
-    // Add the item to the tree-view control. 
-    hPrev = (HTREEITEM)SendMessage(hWnd, TVM_INSERTITEM, 0, (LPARAM)(LPTVINSERTSTRUCT)&tvins); 
-
-    _tprintf(_T("hPrev = 0x%X\n"), hPrev);
-
-	TVITEM tvi1;
-	tvi1.mask = TVIF_TEXT | TVIF_PARAM;
-    tvi1.pszText = _T("Test 2\nhello ...\npapa\nmama..."); 
-    tvi1.cchTextMax = sizeof(tvi.pszText)/sizeof(tvi.pszText[0]); 
-    tvi1.lParam = 2; 
-
-	TVINSERTSTRUCT tvins1; 
-    tvins1.item = tvi1; 
-    tvins1.hInsertAfter = (HTREEITEM)TVI_LAST; 
-	tvins1.hParent = hPrev; // TVI_ROOT; 
-
-	HTREEITEM hPrev1 = (HTREEITEM)SendMessage(hWnd, TVM_INSERTITEM, 0, (LPARAM)(LPTVINSERTSTRUCT)&tvins1);
-	_tprintf(_T("hPrev1 = 0x%X\n"), hPrev1);
-
-
-	TVITEM tvi2; 
-	tvi2.mask = TVIF_TEXT | TVIF_PARAM | TVIF_CHILDREN;
-    tvi2.pszText = _T("Test 3"); 
-    tvi2.cchTextMax = sizeof(tvi2.pszText)/sizeof(tvi2.pszText[0]); 
-	tvi2.cChildren = 0;
-    tvi2.lParam = 3; 
-
-	TVINSERTSTRUCT tvins2; 
-    tvins2.item = tvi2; 
-    tvins2.hInsertAfter = (HTREEITEM)TVI_LAST; 
-	tvins2.hParent = TVI_ROOT; 
-
-    
-    // Add the item to the tree-view control. 
-    HTREEITEM hPrev2 = (HTREEITEM)SendMessage(hWnd, TVM_INSERTITEM, 0, (LPARAM)(LPTVINSERTSTRUCT)&tvins2); 
-*/
 }
 
 
@@ -90,68 +15,210 @@ TreeControl::~TreeControl()
 
 }
 
-void TreeControl::buildTree(HWND hWnd, HTREEITEM parent)
+
+void TreeControl::reBuildTree()
 {
-	int count = hwndTree.count(hWnd);
+	_tprintf(_T("reBuildTree\n"));
+	hwndTree = new multimap<HWND, HWND>();
+
+	if(!EnumChildWindows(NULL, addWndHandle, (LPARAM)this)){
+		DWORD dwError = GetLastError();
+		_tprintf(_T("EnumChildWindows: dwError = %i\n"), dwError);
+		HPrint::printErrorMessage(dwError);
+	}
+
+	_tprintf(_T("hwndTree.size() = %i\n"), hwndTree->size());
+	
+	BOOL res = addParentChildPairsToWndTree();
+	_tprintf(_T("res = %i\n"), res);
+	_tprintf(_T("hwndTree.size() = %i\n"), hwndTree->size());
+	_tprintf(_T("hwndTree.count(0) = %i\n"), hwndTree->count(0));
+	
+	TreeView_DeleteAllItems(this->hWnd);
+	buildTree(0, TVI_ROOT, 1);
+
+	hwndTree->clear();
+	delete hwndTree;
+}
+
+
+
+void TreeControl::buildTree(HWND hWnd, HTREEITEM parent, int level)
+{
+	int count = hwndTree->count(hWnd);
 	if(count == 0){
 		return;  
 	}
 
-	pair<multimap<HWND, HWND>::iterator, multimap<HWND, HWND>::iterator> ppp;
+	pair<multimap<HWND, HWND>::iterator, multimap<HWND, HWND>::iterator> range;
 	 
-    // equal_range(b) returns pair<iterator,iterator> representing the range
-	// of element with key b
-	ppp = hwndTree.equal_range(hWnd);
+	// representing the range of element with key hWnd
+	range = hwndTree->equal_range(hWnd);
 	
 	HWND hw;
 	IWindow *iWnd;   
 
-	for (multimap<HWND, HWND>::iterator it = ppp.first; it != ppp.second; ++it)
+
+	switch(level)
 	{
-		hw = it->second;
-		iWnd = new IWindow(hw);
+	    case 1: // add root item
+		{
+			multimap<HWND, HWND>::const_iterator treeIter = hwndTree->find(0);
+			if(treeIter == hwndTree->end()){
+				return;
+			}
 
-		TVITEM tvi; 
-	    tvi.mask = TVIF_TEXT | TVIF_PARAM | TVIF_CHILDREN;
+			hw = treeIter->second;
+			iWnd = new IWindow(hw);
 
-		TString str;
-		str.append(_T("HWND: 0x%X ; Class: %s ; Text: %s ; File: %s"), iWnd->getHWND(), iWnd->getClassName(), iWnd->getText(), iWnd->getExecutableFileName());
+			TString str;
+			str.append(_T("HWND: 0x%X ; Class: %s"), iWnd->getHWND(), iWnd->getClassName());
+			if(_tcscmp(iWnd->getText(), _T(""))){ // if not empty string
+				str.append(_T(" ; Text: %s"), iWnd->getText());
+			}
 
-		tvi.pszText = (LPTSTR)str.getString(); 
-        tvi.cchTextMax = sizeof(tvi.pszText)/sizeof(tvi.pszText[0]); 
+			ProcessInfo processInfo(iWnd->getProcessID());
+			delete iWnd;
 
-		int nChildren = hwndTree.count(hw);
-		if(nChildren){
-			tvi.cChildren = 1;
-		} else {
-			tvi.cChildren = 0;
+			if(_tcscmp(processInfo.getFileName(), _T(""))){ // if not empty string
+				str.append(_T(" ; FileName : %s"), processInfo.getFileName());
+			}
+				
+			HTREEITEM hPrev = insertItem(parent, str.getString(), hwndTree->count(hw), (LPARAM)hw);
+			buildTree(hw, hPrev, 2);
 		}
-        tvi.lParam = (LPARAM)hw; 
+		break;
 
-		TVINSERTSTRUCT tvins; 
-		tvins.item = tvi; 
-		tvins.hInsertAfter = (HTREEITEM)TVI_LAST; 
+		case 2: // add process and windows which this process created as items tree
+		{
+			map<DWORD, HTREEITEM> processes;
+			
+			for (multimap<HWND, HWND>::iterator it = range.first; it != range.second; ++it)
+			{
+				hw = it->second;
+				DWORD PID = NULL;
+				GetWindowThreadProcessId(hw, &PID);
+				HTREEITEM hpItem;
 
-		if(parent == NULL){
-		    tvins.hParent = TVI_ROOT; 
-		} else {
-			tvins.hParent = parent; 
+				if(processes.find(PID) == processes.end())
+				{
+					ProcessInfo processInfo(PID);
+					hpItem = insertItem(parent, processInfo.getFileName(), 1, (LPARAM)PID);
+				    processes.insert(pair<DWORD, HTREEITEM>(PID, hpItem));
+				}
+				else {
+					hpItem = processes[PID];
+				}
+
+				iWnd = new IWindow(hw);
+
+				TString str;
+				str.append(_T("HWND: 0x%X ; Class: %s"), iWnd->getHWND(), iWnd->getClassName());
+				if(_tcscmp(iWnd->getText(), _T(""))){ // if not empty string
+					str.append(_T(" ; Text: %s"), iWnd->getText());
+				}
+				delete iWnd;
+
+				int countChilds = hwndTree->count(hw);
+				HTREEITEM hPrev = insertItem(hpItem, str.getString(), countChilds, (LPARAM)hw); 
+				if(countChilds){
+				    buildTree(hw, hPrev, 4);
+				}
+			}
 		}
-    
-        // Add the item to the tree-view control. 
-		HTREEITEM hPrev = (HTREEITEM)SendMessage(this->hWnd, TVM_INSERTITEM, 0, (LPARAM)(LPTVINSERTSTRUCT)&tvins); 
-		buildTree(hw, hPrev);
+		break;
 
-		delete iWnd;
+		default: // add window as another window child
+			for (multimap<HWND, HWND>::iterator it = range.first; it != range.second; ++it)
+			{
+				hw = it->second;
+				iWnd = new IWindow(hw);
+
+				TString str;
+				str.append(_T("HWND: 0x%X ; Class: %s"), iWnd->getHWND(), iWnd->getClassName());
+				if(_tcscmp(iWnd->getText(), _T(""))){ // if not empty string
+					str.append(_T(" ; Text: %s"), iWnd->getText());
+				}
+				delete iWnd;
+
+				int countChilds = hwndTree->count(hw);
+				HTREEITEM hPrev = insertItem(parent, str.getString(), countChilds, (LPARAM)hw); 
+				if(countChilds){
+				    buildTree(hw, hPrev, level + 1);
+				}
+			}
+		break;
 	}
+	
 }
 
+
+TreeItem  TreeControl::getSelectedItem()
+{
+	HTREEITEM item = TreeView_GetSelection(hWnd);
+	HTREEITEM itemParent = item;
+
+	int level = 0;
+	while(itemParent != NULL){
+		itemParent = TreeView_GetParent(hWnd, itemParent);
+		level++;
+	}
+
+	_tprintf(_T("level = %i\n"), level);
+
+	TVITEM tvItem;
+    tvItem.mask = TVIF_PARAM | TVIF_HANDLE;
+	tvItem.hItem = item;
+
+	TreeView_GetItem(hWnd, &tvItem);
+	
+	TreeItem treeItem;
+	treeItem.vItem = (DWORD)tvItem.lParam;
+
+	switch(level)
+	{
+	    case 1:
+			treeItem.type = ROOTWINDOW;
+		break;
+
+	    case 2:
+			treeItem.type = PROCESS;
+		break;
+
+	    default:
+			treeItem.type = WINDOW;
+		break;
+	}
+
+	return treeItem;
+}
+
+HTREEITEM  TreeControl::insertItem(HTREEITEM parent, const TCHAR* label, int hasChild, LPARAM param)
+{
+	TVITEM tvi; 
+	tvi.mask = TVIF_TEXT | TVIF_PARAM | TVIF_CHILDREN;
+	tvi.pszText = (LPTSTR)label; 
+	tvi.cchTextMax = sizeof(tvi.pszText)/sizeof(tvi.pszText[0]); 
+	if(hasChild){
+		tvi.cChildren = 1;
+	} else {
+		tvi.cChildren = 0;
+	}
+	tvi.lParam = param; 
+
+	TVINSERTSTRUCT tvins; 
+	tvins.item = tvi; 
+	tvins.hInsertAfter = (HTREEITEM)TVI_LAST; 
+	tvins.hParent = parent;
+
+	return (HTREEITEM)SendMessage(this->hWnd, TVM_INSERTITEM, 0, (LPARAM)(LPTVINSERTSTRUCT)&tvins); 
+}
 
 BOOL TreeControl::addParentChildPairsToWndTree()
 {
 	BOOL result = FALSE;
 
-	for (multimap<HWND, HWND>::iterator it = hwndTree.begin(); it != hwndTree.end(); ++it)
+	for (multimap<HWND, HWND>::iterator it = hwndTree->begin(); it != hwndTree->end(); ++it)
 	{
 		// cout << "  [" << it->first << ", " << it->second << "]" << endl;
 		// _tprintf(_T(" [(%i, %i), (%i, %i)]\n"), it->first->getM1(), it->first->getM2(), it->second->getM1(), it->second->getM2());
@@ -165,7 +232,7 @@ BOOL TreeControl::addParentChildPairsToWndTree()
 			if(!this->isPairExist(p))
 			{
 				_tprintf(_T(" (0x%X, 0x%X)\n"), hpWnd, hWnd);
-				this->hwndTree.insert(p);
+				this->hwndTree->insert(p);
 				result = TRUE;
 			}
 		}
@@ -182,21 +249,13 @@ BOOL TreeControl::addParentChildPairsToWndTree()
 
 BOOL CALLBACK TreeControl::addWndHandle(HWND hWnd, LPARAM lParam)
 {
-//	_tprintf(_T("hwnd = 0x%X\n"), hwnd);
-
 	addToWndTree(hWnd, (TreeControl*)lParam);
 
 	if(!EnumChildWindows(hWnd, addChildWndHandle, lParam)){
-		DWORD dwError = GetLastError();
+//		DWORD dwError = GetLastError();
 //		_tprintf(_T("dwError = %i\n"), dwError);
 //		Helper::printErrorMessage(dwError);
 	}
-
-	// Sleep(5000);
-/*
-	TreeControl *treeControl = (TreeControl*)lParam;
-	_tprintf(_T("treeControl->hWnd = 0x%X\n"), treeControl->hWnd);
-*/
 
 	return TRUE;
 }
@@ -215,7 +274,7 @@ BOOL TreeControl::addToWndTree(HWND hWnd, TreeControl *treeCtrl)
 	pair<HWND, HWND> p(hpWnd, hWnd);
 
 	if(!treeCtrl->isPairExist(p)){
-		treeCtrl->hwndTree.insert(p);
+		treeCtrl->hwndTree->insert(p);
 		return TRUE;
 	}
 
@@ -224,12 +283,12 @@ BOOL TreeControl::addToWndTree(HWND hWnd, TreeControl *treeCtrl)
 
 BOOL TreeControl::isPairExist(pair<HWND, HWND> p)
 {
-	if(hwndTree.count(p.first) == 0){
+	if(hwndTree == NULL || hwndTree->count(p.first) == 0){
 		return FALSE;
 	}
 
 	pair<multimap<HWND, HWND>::iterator, multimap<HWND, HWND>::iterator> range;
-	range = hwndTree.equal_range(p.first);
+	range = hwndTree->equal_range(p.first);
 
 	
 	for (multimap<HWND, HWND>::iterator it = range.first; it != range.second; ++it)
