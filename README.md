@@ -47,3 +47,26 @@ Content Cell  | Content Cell
 | col 2 is      | centered        |   $12 |
 | zebra stripes | are neat        |    $1 |
 
+
+This is [an example](http://example.com/ "Title") inline link.
+
+
+[Google]: http://google.com/  "Google" sdfsdfsfs sdfsdfsdfsd
+
+*single asterisks*
+
+_single underscores_
+
+**double asterisks**
+
+__double underscores__
+
+
+
+![Main wnd](/img/main_wnd.png)
+
+
+
+On July 2, an alien mothership enters Earth's orbit 
+and deploys several dozen saucer-shaped "destroyer" 
+spacecraft, each 15 miles (24 km) wide.
