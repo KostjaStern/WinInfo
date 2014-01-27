@@ -4,15 +4,12 @@
 
 #define IDR_MENU1                               102
 #define IDD_MAIN                                108
-#define IDD_TAB_ONE                             109
-#define IDD_TAB_TWO                             111
 #define IDD_CONTROL_INFO                        113
 #define IDD_PROCESS_INFO                        115
 #define IDC_BUTTON1                             1000
 #define IDC_TAB1                                1000
 #define IDC_STATIC1                             1002
 #define IDC_EDIT1                               1003
-#define IDC_TREE1                               1003
 #define IDC_EDIT2                               1004
 #define IDC_EDIT3                               1005
 #define IDC_EDIT4                               1006
