@@ -389,6 +389,36 @@ void MainDialog_OnSize(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 }
 
+void MainDialog_OnParentNotify(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	if(LOWORD(wParam) == WM_LBUTTONDOWN && treeWindows != NULL)
+	{
+		HWND hBtn = GetDlgItem( GetDlgItem(hWnd, IDC_TAB1), WND_TREE_REFRESH_BUTTON_ID);
+
+		WINDOWINFO rootWnd;
+		GetWindowInfo(hWnd, &rootWnd);
+
+		WINDOWINFO btnWnd;
+		GetWindowInfo(hBtn, &btnWnd);
+
+		RECT btnRect;
+		btnRect.bottom = btnWnd.rcClient.bottom - rootWnd.rcClient.top;
+		btnRect.left   = btnWnd.rcClient.left - rootWnd.rcClient.left;
+		btnRect.right  = btnWnd.rcClient.right - rootWnd.rcClient.left;
+		btnRect.top    = btnWnd.rcClient.top - rootWnd.rcClient.top;
+
+		int xCoord = LOWORD(lParam);
+		int yCoord = HIWORD(lParam);
+
+		POINT point = {xCoord, yCoord};
+				
+		if(PtInRect(&btnRect, point) && IsWindowVisible(hBtn))
+		{
+			treeWindows->reBuildTree();
+		}
+	}
+}
+
 BOOL CALLBACK MainDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	DWORD dwError;
@@ -437,12 +467,11 @@ BOOL CALLBACK MainDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		break;
 
 		case WM_PARENTNOTIFY:
-			_tprintf(_T("WM_PARENTNOTIFY: hWnd = 0x%X , uMsg = %i , wParam = %i , lParam = %i \n"), hWnd, uMsg, wParam, lParam);
-
+			MainDialog_OnParentNotify(hWnd, uMsg, wParam, lParam);
 		break;
 
 		case WM_COMMAND:
-			_tprintf(_T("WM_COMMAND: hWnd = 0x%X , uMsg = %i , wParam = %i , lParam = %i \n"), hWnd, uMsg, wParam, lParam);
+			// _tprintf(_T("WM_COMMAND: hWnd = 0x%X , uMsg = %i , wParam = %i , lParam = %i \n"), hWnd, uMsg, wParam, lParam);
 			MainDialog_OnCommand(hWnd, uMsg, wParam, lParam);
 		break;
 
@@ -456,16 +485,20 @@ BOOL CALLBACK MainDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 BOOL CALLBACK CtrlInfoDialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	static HWND hWndSel = NULL; 
+
+
 	switch (uMsg) 
     { 
 	    case WM_INITDIALOG:
 	    {	
-			_tprintf(_T("WM_INITDIALOG\n"));
-			_tprintf(_T("hwndDlg = 0x%X\n"), hwndDlg);
-			_tprintf(_T("lParam = 0x%X\n"), lParam);
-			_tprintf(_T("\n"));
+			// _tprintf(_T("WM_INITDIALOG\n"));
+
+			hWndSel = (HWND)((TreeItem*)lParam)->vItem;
+			// _tprintf(_T("hWndSel = 0x%X\n"), hWndSel);
 
 			HWND hPopupEdit = GetDlgItem(hwndDlg, IDC_EDIT1);
+
 			// IWindow *wndInfo = new IWindow((HWND)lParam);
 			// SetTextToEdit(hPopupEdit, wndInfo);
 
@@ -481,11 +514,39 @@ BOOL CALLBACK CtrlInfoDialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 		break;
 
 	    case WM_COMMAND:
+			
 			switch(LOWORD(wParam))
 			{
 			    case IDCANCEL:
 					EndDialog(hwndDlg, 0);
 					return TRUE;
+				break;
+
+				case IDC_BUTTON1:
+				{
+					// _tprintf(_T("IDC_BUTTON1: hwndDlg = 0x%X , uMsg = %i , wParam = %i , lParam = %i \n"), hwndDlg, uMsg, wParam, lParam);
+					// _tprintf(_T("hWndSel = 0x%X\n"), hWndSel);
+					if(hWndSel != NULL)
+					{
+						IWindow *wndInfo = new IWindow(hWndSel);
+						DWORD currThreadID = GetCurrentThreadId();
+
+						if(!AttachThreadInput(wndInfo->getThreadID(), currThreadID, TRUE))
+						{
+							DWORD dwError = GetLastError();
+		                    _tprintf(_T("AttachThreadInput: dwError = %i \n"), dwError);
+							HPrint::printErrorMessage(dwError);
+						}
+						else
+						{
+							HWND prevWnd = SetFocus(wndInfo->getHWND());
+							_tprintf(_T("prevWnd = 0x%X\n"), prevWnd);
+							wndInfo->selectWindow();
+						}
+
+						delete wndInfo;
+					}
+				}
 				break;
 			}
 
