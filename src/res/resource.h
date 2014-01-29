@@ -6,6 +6,9 @@
 #define IDD_MAIN                                108
 #define IDD_CONTROL_INFO                        113
 #define IDD_PROCESS_INFO                        115
+#define IDI_CURSOR1                             122
+#define IDB_BITMAP1                             123
+#define IDB_BITMAP2                             124
 #define IDC_BUTTON1                             1000
 #define IDC_TAB1                                1000
 #define IDC_STATIC1                             1002

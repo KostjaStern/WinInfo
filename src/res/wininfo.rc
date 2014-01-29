@@ -11,6 +11,18 @@
 
 
 //
+// Bitmap resources
+//
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
+IDB_BITMAP1        BITMAP         "..\\..\\icons\\window1.bmp"
+
+
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
+IDB_BITMAP2        BITMAP         "..\\..\\icons\\window2.bmp"
+
+
+
+//
 // Menu resources
 //
 LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
@@ -67,7 +79,7 @@ FONT 8, "Ms Shell Dlg"
     LTEXT           "Instance:", IDC_STATIC, 15, 74, 30, 8, SS_LEFT
     EDITTEXT        IDC_EDIT3, 57, 59, 158, 12, ES_AUTOHSCROLL | ES_READONLY
     EDITTEXT        IDC_EDIT4, 57, 74, 158, 12, ES_AUTOHSCROLL | ES_READONLY
-    LTEXT           "", IDC_STATIC3, 237, 64, 29, 18, WS_BORDER | SS_LEFT | SS_NOTIFY
+    CONTROL         "", IDC_STATIC3, WC_STATIC, SS_BITMAP | SS_NOTIFY, 233, 61, 32, 25
     CONTROL         "", IDC_TAB1, WC_TABCONTROL, 0, 5, 100, 270, 195, WS_EX_TRANSPARENT
 }
 
@@ -82,3 +94,11 @@ FONT 8, "Ms Shell Dlg"
 {
     EDITTEXT        IDC_EDIT1, 4, 3, 334, 56, WS_HSCROLL | WS_VSCROLL | ES_AUTOHSCROLL | ES_MULTILINE | ES_READONLY
 }
+
+
+
+//
+// Cursor resources
+//
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
+IDI_CURSOR1        CURSOR         "..\\..\\icons\\cursor_new.cur"

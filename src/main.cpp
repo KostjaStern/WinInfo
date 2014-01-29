@@ -15,9 +15,9 @@
 BOOL isMouseCapture = FALSE;
 IWindow *lastWnd = NULL;
 TreeControl *treeWindows = NULL;
-
-
-
+HBITMAP hBitmapWnd = NULL;
+HBITMAP hBitmapWndSight = NULL;
+HCURSOR hSight = NULL;
 
 BOOL CALLBACK MainDialogProc(HWND, UINT, WPARAM, LPARAM);
 BOOL CALLBACK CtrlInfoDialogProc(HWND, UINT, WPARAM, LPARAM);
@@ -34,6 +34,9 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE, PTSTR pszCmdLine, int nCmdS
     // To get access to SACL.
     CToolhelp::EnablePrivilege(SE_SECURITY_NAME, TRUE);     
 
+	hBitmapWndSight = LoadBitmap(hInstance, MAKEINTRESOURCE(IDB_BITMAP1));
+    hBitmapWnd      = LoadBitmap(hInstance, MAKEINTRESOURCE(IDB_BITMAP2));
+    hSight          = LoadCursor(hInstance, MAKEINTRESOURCE(IDI_CURSOR1));
 
 	// init "Common Control Library"
 	INITCOMMONCONTROLSEX icc;
@@ -61,6 +64,22 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE, PTSTR pszCmdLine, int nCmdS
 	    delete treeWindows;
 	}
 
+	if(lastWnd != NULL){
+		delete lastWnd;
+	}
+
+    if(hBitmapWnd != NULL){
+		DeleteObject(hBitmapWnd);
+	}
+
+	if(hBitmapWndSight != NULL){
+		DeleteObject(hBitmapWndSight);
+	}
+
+    if(hSight != NULL){
+        DeleteObject(hSight);
+    }
+
 	FreeConsole();
 	CToolhelp::EnablePrivilege(SE_SECURITY_NAME, FALSE);     
     CToolhelp::EnablePrivilege(SE_DEBUG_NAME, FALSE);
@@ -76,6 +95,10 @@ BOOL MainDialog_OnInitDialog(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	RECT wndRect;
     GetClientRect(hWnd, &wndRect);
 	_tprintf(_T("wndRect.bottom = %i , wndRect.left = %i , wndRect.right = %i , wndRect.top = %i \n"), wndRect.bottom, wndRect.left, wndRect.right, wndRect.top);
+
+	// _tprintf(_T("hBitmap = 0x%X\n"), hBitmap);
+	HWND hFinderTool = GetDlgItem(hWnd, IDC_STATIC3);
+	SendMessage(hFinderTool, STM_SETIMAGE, (WPARAM)IMAGE_BITMAP, (LPARAM)hBitmapWndSight);
 
 	HWND hTabControl = GetDlgItem(hWnd, IDC_TAB1);
 
@@ -320,6 +343,18 @@ void MainDialog_OnCommand(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 		break;
 
+        case IDC_STATIC3: // click in finder tool
+        {
+            SetCapture(hWnd);
+		    isMouseCapture = TRUE;
+
+            HWND hFinderTool = GetDlgItem(hWnd, IDC_STATIC3);
+            SendMessage(hFinderTool, STM_SETIMAGE, (WPARAM)IMAGE_BITMAP, (LPARAM)hBitmapWnd);
+            hSight = SetCursor(hSight);
+            _tprintf(_T("hSight = 0x%X\n"), hSight);
+        }
+        break;
+
 		case IDM_EXIT1:
 			// menu command
 			if(whwParam == 0 && lParam == 0)
@@ -337,6 +372,7 @@ void MainDialog_OnCommand(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		break;
 	}
 
+/*
 	HANDLE hFinder  = GetDlgItem(hWnd, IDC_STATIC3);
 
 	// click in finder tool
@@ -344,7 +380,7 @@ void MainDialog_OnCommand(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		SetCapture(hWnd);
 		isMouseCapture = TRUE;
 	}
-
+*/
 }
 
 
@@ -440,6 +476,11 @@ BOOL CALLBACK MainDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				    HPrint::printErrorMessage(dwError);
 				}
 				isMouseCapture = FALSE;
+
+                HWND hFinderTool = GetDlgItem(hWnd, IDC_STATIC3);
+                SendMessage(hFinderTool, STM_SETIMAGE, (WPARAM)IMAGE_BITMAP, (LPARAM)hBitmapWndSight);
+                hSight = SetCursor(hSight);
+                _tprintf(_T("hSight = 0x%X\n"), hSight);
 			}
 		break;
 
