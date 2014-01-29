@@ -17,8 +17,8 @@ IWindow::IWindow(HWND hWnd)
 		wndText[0] = _T('\0');
 
 		wndInfo = WINDOWINFO();
-		_tprintf(_T("wndInfo.cbSize = %i\n"), wndInfo.cbSize);
-		_tprintf(_T("wndInfo.dwStyle = %i\n"), wndInfo.dwStyle);
+		// _tprintf(_T("wndInfo.cbSize = %i\n"), wndInfo.cbSize);
+		// _tprintf(_T("wndInfo.dwStyle = %i\n"), wndInfo.dwStyle);
 
 		wndWidth = 0;
 		wndHeight = 0;

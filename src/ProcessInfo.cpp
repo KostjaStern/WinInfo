@@ -127,7 +127,7 @@ BOOL ProcessInfo::GetProcessCmdLine(HANDLE hProcess, LPTSTR szCmdLine, DWORD Siz
         return FALSE;
     }
 
-	_tprintf(_T("wszCmdLine = %s\n"), wszCmdLine);
+	// _tprintf(_T("wszCmdLine = %s\n"), wszCmdLine);
 
     // 4. Skip the application pathname
     //    it can be empty, "c:\...\app.exe" or c:\...\app.exe

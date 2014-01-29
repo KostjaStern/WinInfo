@@ -19,9 +19,9 @@ HBITMAP hBitmapWnd = NULL;
 HBITMAP hBitmapWndSight = NULL;
 HCURSOR hSight = NULL;
 
-BOOL CALLBACK MainDialogProc(HWND, UINT, WPARAM, LPARAM);
-BOOL CALLBACK CtrlInfoDialogProc(HWND, UINT, WPARAM, LPARAM);
-BOOL CALLBACK ProcessInfoDialogProc(HWND, UINT, WPARAM, LPARAM);
+INT_PTR CALLBACK MainDialogProc(HWND, UINT, WPARAM, LPARAM);
+INT_PTR CALLBACK CtrlInfoDialogProc(HWND, UINT, WPARAM, LPARAM);
+INT_PTR CALLBACK ProcessInfoDialogProc(HWND, UINT, WPARAM, LPARAM);
 
 
 
@@ -88,7 +88,7 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE, PTSTR pszCmdLine, int nCmdS
 }
 
 
-BOOL MainDialog_OnInitDialog(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR MainDialog_OnInitDialog(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	_tprintf(_T("WM_INITDIALOG\n"));
 
@@ -455,7 +455,7 @@ void MainDialog_OnParentNotify(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 	}
 }
 
-BOOL CALLBACK MainDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK MainDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	DWORD dwError;
 
@@ -482,38 +482,45 @@ BOOL CALLBACK MainDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 hSight = SetCursor(hSight);
                 _tprintf(_T("hSight = 0x%X\n"), hSight);
 			}
+			return TRUE;
 		break;
 
 		case WM_SIZE:
 			MainDialog_OnSize(hWnd, uMsg, wParam, lParam);
+			return TRUE;
 		break;
 
 		case WM_GETMINMAXINFO:
-		{
-			MINMAXINFO *minMaxInfo = (MINMAXINFO*)lParam;
+			{
+				MINMAXINFO *minMaxInfo = (MINMAXINFO*)lParam;
 
-			// set the minimum tracking width (x member) and the minimum tracking height (y member) of the window. 
-			minMaxInfo->ptMinTrackSize.x = 435;
-			minMaxInfo->ptMinTrackSize.y = 400;
-		}
+				// set the minimum tracking width (x member) and the minimum tracking height (y member) of the window. 
+				minMaxInfo->ptMinTrackSize.x = 435;
+				minMaxInfo->ptMinTrackSize.y = 400;
+			}
+		    return TRUE;
 		break;
 
 		// case WM_LBUTTONDOWN:
 	    case WM_MOUSEMOVE:
 		    MainDialog_OnMouseMove(hWnd, uMsg, wParam, lParam);
+			return TRUE;
 		break;
 
 		case WM_NOTIFY:
 			MainDialog_OnNotify(hWnd, uMsg, wParam, lParam);
+			return TRUE;
 		break;
 
 		case WM_PARENTNOTIFY:
 			MainDialog_OnParentNotify(hWnd, uMsg, wParam, lParam);
+			return TRUE;
 		break;
 
 		case WM_COMMAND:
 			// _tprintf(_T("WM_COMMAND: hWnd = 0x%X , uMsg = %i , wParam = %i , lParam = %i \n"), hWnd, uMsg, wParam, lParam);
 			MainDialog_OnCommand(hWnd, uMsg, wParam, lParam);
+			return TRUE;
 		break;
 
 // 		default:
@@ -524,7 +531,7 @@ BOOL CALLBACK MainDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 }
 
 
-BOOL CALLBACK CtrlInfoDialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK CtrlInfoDialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	static HWND hWndSel = NULL; 
 
@@ -603,7 +610,7 @@ BOOL CALLBACK CtrlInfoDialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 }
 
 
-BOOL CALLBACK ProcessInfoDialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK ProcessInfoDialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) 
     { 
