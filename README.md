@@ -1,72 +1,27 @@
 WinInfo
 =======
 
-Tool for get information from window like Spy++ or AutoIt Window Information Tool
+Tool for get information from window like Spy++ or [AutoIt Window Information Tool]
+(https://www.autoitscript.com/autoit3/docs/intro/au3spy.htm "AutoIt Window Information Tool")
 
-On July 2, an alien mothership enters Earth's orbit 
-and deploys several dozen saucer-shaped "destroyer" 
-spacecraft, each 15 miles (24 km) wide.
+Using the WinInfo Tool you can move your mouse around the window you are interested in and 
+you will be given information of the control that is currently under your mouse.
+Also you can found control window browse the tree in "All Windows" tab.
 
-On July 3, the Black Knights, a squadron of Marine 
-Corps F/A-18 Hornets, participate in an assault on 
-a destroyer near the city of Los Angeles.
-
-# The largest heading (an <h1> tag)
-## The second largest heading (an <h2> tag)
-
-> Pardon my french
-
-*This text will be italic*
-**This text will be bold**
-~~This text will have a strike through it~~
-
-* Item
-* Item
-* Item
-
-- Item
-- Item
-- Item
+![Main WinIfo window](/img/main_wnd.png)
 
 
-First Header  | Second Header
-------------- | -------------
-Content Cell  | Content Cell
-Content Cell  | Content Cell
-
-| Name | Description          |
-| ------------- | ----------- |
-| Help      | Display the help window.|
-| Close     | Closes a window     |
+Information that can be obtained includes:
 
 
-
-| Left-Aligned  | Center Aligned  | Right Aligned |
-| :------------ |:---------------:| -----:|
-| col 3 is      | some wordy text | $1600 |
-| col 2 is      | centered        |   $12 |
-| zebra stripes | are neat        |    $1 |
-
-
-This is [an example](http://example.com/ "Title") inline link.
+| Property name | Description  |
+| :------------ |:---------------|
+| **Text**      | The text on a control, for example "&Next" on a button |
+| **Class**     | window class (see [this](http://msdn.microsoft.com/en-us/library/windows/desktop/ms633574%28v=vs.85%29.aspx)) |
+| **ID**        | The child-window identifier, an integer value used by a dialog box control to notify its parent about events. The application determines the child-window identifier; it must be unique for all child windows with the same parent window. (see description *hMenu* parameter in [CreateWindow](http://msdn.microsoft.com/en-us/library/windows/desktop/ms632679%28v=vs.85%29.aspx) function)|
 
 
-[Google]: http://google.com/  "Google" sdfsdfsfs sdfsdfsdfsd
-
-*single asterisks*
-
-_single underscores_
-
-**double asterisks**
-
-__double underscores__
+![Main WinIfo window](/img/main_wnd2.png)
 
 
-
-![Main wnd](/img/main_wnd.png)
-
-
-
-On July 2, an alien mothership enters Earth's orbit 
-and deploys several dozen saucer-shaped "destroyer" 
-spacecraft, each 15 miles (24 km) wide.
+> Sorry for my english.

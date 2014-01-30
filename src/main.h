@@ -2,6 +2,9 @@
 
 
 #include "res\resource.h"
+#define WND_SUMM_INFO_ID  2001
+#define WND_TREE_INFO_ID  2002
+#define WND_TREE_REFRESH_BUTTON_ID  2003
 
 #include "jeff\Toolhelp.h"
 

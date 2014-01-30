@@ -2,14 +2,7 @@
 
 #include "main.h"
 
-#define WND_SUMM_INFO_ID  2001
-#define WND_TREE_INFO_ID  2002
-#define WND_TREE_REFRESH_BUTTON_ID  2003
 
-/*
-    http://msdn.microsoft.com/en-us/library/ms632626%28v=vs.85%29.aspx (WM_GETMINMAXINFO message)
-
-*/
 
 // static variables
 BOOL isMouseCapture = FALSE;
@@ -37,6 +30,7 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE, PTSTR pszCmdLine, int nCmdS
 	hBitmapWndSight = LoadBitmap(hInstance, MAKEINTRESOURCE(IDB_BITMAP1));
     hBitmapWnd      = LoadBitmap(hInstance, MAKEINTRESOURCE(IDB_BITMAP2));
     hSight          = LoadCursor(hInstance, MAKEINTRESOURCE(IDI_CURSOR1));
+
 
 	// init "Common Control Library"
 	INITCOMMONCONTROLSEX icc;
@@ -95,9 +89,12 @@ INT_PTR MainDialog_OnInitDialog(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 {
 	_tprintf(_T("WM_INITDIALOG\n"));
 
-	RECT wndRect;
-    GetClientRect(hWnd, &wndRect);
-	_tprintf(_T("wndRect.bottom = %i , wndRect.left = %i , wndRect.right = %i , wndRect.top = %i \n"), wndRect.bottom, wndRect.left, wndRect.right, wndRect.top);
+	// RECT wndRect;
+    // GetClientRect(hWnd, &wndRect);
+	// _tprintf(_T("wndRect.bottom = %i , wndRect.left = %i , wndRect.right = %i , wndRect.top = %i \n"), wndRect.bottom, wndRect.left, wndRect.right, wndRect.top);
+
+
+	SetClassLong(hWnd, GCL_HICON, (LONG)LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_APP)) ); 
 
 	// _tprintf(_T("hBitmap = 0x%X\n"), hBitmap);
 	HWND hFinderTool = GetDlgItem(hWnd, IDC_STATIC3);

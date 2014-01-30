@@ -13,11 +13,11 @@
 // Bitmap resources
 //
 LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
-IDB_BITMAP1        BITMAP         "..\\..\\icons\\window1.bmp"
+IDB_BITMAP1        BITMAP         "img\\window1.bmp"
 
 
 LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
-IDB_BITMAP2        BITMAP         "..\\..\\icons\\window2.bmp"
+IDB_BITMAP2        BITMAP         "img\\window2.bmp"
 
 
 
@@ -104,4 +104,12 @@ FONT 8, "Ms Shell Dlg"
 // Cursor resources
 //
 LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
-IDI_CURSOR1        CURSOR         "..\\..\\icons\\cursor_new.cur"
+IDI_CURSOR1        CURSOR         "img\\cursor_new.cur"
+
+
+
+//
+// Icon resources
+//
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
+IDI_APP            ICON           "img\\wininfo.ico"
