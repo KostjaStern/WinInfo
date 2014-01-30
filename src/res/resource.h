@@ -16,8 +16,9 @@
 #define IDC_EDIT2                               1004
 #define IDC_EDIT3                               1005
 #define IDC_EDIT4                               1006
-#define IDM_EXIT1                               40000
-#define IDM_ABOUT____1                          40001
-#define IDM_TEST1                               40002
+#define IDM_EXIT                                40000
+#define IDM_ABOUT                               40001
+#define IDM_WINDOWFROMPOINT                     40002
+#define IDM_CHILDWINDOWFROMPOINT                40003
 #define IDC_STATIC3                             40004
 #define IDC_STATIC2                             40005

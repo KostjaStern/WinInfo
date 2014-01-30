@@ -26,19 +26,23 @@ IDB_BITMAP2        BITMAP         "..\\..\\icons\\window2.bmp"
 // Menu resources
 //
 LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
-IDR_MENU1 MENU
+IDR_MENU1 MENUEX
 {
-    POPUP "File"
+    POPUP "File", 0, 0, 0
     {
-        MENUITEM "Exit", IDM_EXIT1
+        MENUITEM "Exit", IDM_EXIT, 0, 0
     }
-    POPUP "Options"
+    POPUP "Options", 0, 0, 0
     {
-        MENUITEM "Test", IDM_TEST1
+        POPUP "Select control mode", 0, 0, 0
+        {
+            MENUITEM "WindowFromPoint", IDM_WINDOWFROMPOINT, 0, MFS_CHECKED
+            MENUITEM "ChildWindowFromPoint", IDM_CHILDWINDOWFROMPOINT, 0, 0
+        }
     }
-    POPUP "Help"
+    POPUP "Help", 0, 0, 0
     {
-        MENUITEM "About ...", IDM_ABOUT____1
+        MENUITEM "About ...", IDM_ABOUT, 0, 0
     }
 }
 

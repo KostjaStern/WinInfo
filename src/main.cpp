@@ -22,7 +22,7 @@ HCURSOR hSight = NULL;
 INT_PTR CALLBACK MainDialogProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK CtrlInfoDialogProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK ProcessInfoDialogProc(HWND, UINT, WPARAM, LPARAM);
-
+HWND GetWindowByPoint(HWND hWnd, POINT point);
 
 
 int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE, PTSTR pszCmdLine, int nCmdShow)
@@ -210,8 +210,8 @@ void MainDialog_OnMouseMove(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			HPrint::printErrorMessage(dwError);
 		}
 
-		hSearchWnd = WindowFromPoint(point);
-				
+		// hSearchWnd = WindowFromPoint(point);
+		hSearchWnd = GetWindowByPoint(hWnd, point);
 
 		if(hSearchWnd != NULL  && (lastWnd == NULL || hSearchWnd != lastWnd->getHWND()))
 		{
@@ -338,7 +338,8 @@ void MainDialog_OnCommand(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			EndDialog(hWnd, uMsg);
 		break;
 
-		case WND_TREE_REFRESH_BUTTON_ID:
+		case WND_TREE_REFRESH_BUTTON_ID: // click in Refresh button (in All Windows tab) 
+                                         // but works only if press enter key ?
 			_tprintf(_T("WND_TREE_REFRESH_BUTTON_ID click\n"));
 
 		break;
@@ -354,33 +355,69 @@ void MainDialog_OnCommand(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             _tprintf(_T("hSight = 0x%X\n"), hSight);
         }
         break;
+	}
 
-		case IDM_EXIT1:
-			// menu command
-			if(whwParam == 0 && lParam == 0)
-			{
+
+    if(whwParam == 0 && lParam == 0) // menu command
+    {
+        switch(wlwParam)
+	    {
+            case IDM_EXIT:   // File -> Exit
 				MessageBox(hWnd, _T("Exit menu click"), _T("Debug"), MB_OK);
-			}
-		break;
+		    break;
 
-		case IDM_ABOUT____1:
-			// menu command
-			if(whwParam == 0 && lParam == 0)
-			{
+            case IDM_WINDOWFROMPOINT: // 
+            {
+                HMENU hMenu = GetMenu(hWnd);
+                CheckMenuItem(hMenu, IDM_CHILDWINDOWFROMPOINT, MF_UNCHECKED);
+                CheckMenuItem(hMenu, IDM_WINDOWFROMPOINT, MF_CHECKED);
+
+                MENUITEMINFO menuItemInfo = {sizeof(MENUITEMINFO)};
+                MENUITEMINFO menuItemInfo1 = {sizeof(MENUITEMINFO)};
+
+                menuItemInfo.fMask = MIIM_STATE | MIIM_ID;
+                if(GetMenuItemInfo(hMenu, IDM_WINDOWFROMPOINT, FALSE, &menuItemInfo))
+                {
+                    _tprintf(_T("IDM_WINDOWFROMPOINT: menuItemInfo.wID = %i\n"), menuItemInfo.wID);
+                    _tprintf(_T("IDM_WINDOWFROMPOINT: menuItemInfo.fState = 0x%X\n"), menuItemInfo.fState);
+                    if(menuItemInfo.fState & MFS_CHECKED){
+                        _tprintf(_T("MFS_CHECKED\n"));
+                    }
+                    if(menuItemInfo.fState & MFS_UNCHECKED){
+                        _tprintf(_T("MFS_UNCHECKED\n"));
+                    }
+                }
+                
+                menuItemInfo1.fMask = MIIM_STATE | MIIM_ID;
+                if(GetMenuItemInfo(hMenu, IDM_CHILDWINDOWFROMPOINT, FALSE, &menuItemInfo1))
+                {
+                    _tprintf(_T("IDM_CHILDWINDOWFROMPOINT: menuItemInfo1.wID = %i\n"), menuItemInfo1.wID);
+                    _tprintf(_T("IDM_CHILDWINDOWFROMPOINT: menuItemInfo1.fState = 0x%X\n"), menuItemInfo1.fState);
+                    if(menuItemInfo1.fState & MFS_CHECKED){
+                        _tprintf(_T("MFS_CHECKED\n"));
+                    }
+                    if(menuItemInfo1.fState & MFS_UNCHECKED){
+                        _tprintf(_T("MFS_UNCHECKED\n"));
+                    }
+                }
+            }
+            break;
+
+            case IDM_CHILDWINDOWFROMPOINT:
+            {
+                HMENU hMenu = GetMenu(hWnd);
+                CheckMenuItem(hMenu, IDM_CHILDWINDOWFROMPOINT, MF_CHECKED);
+                CheckMenuItem(hMenu, IDM_WINDOWFROMPOINT, MF_UNCHECKED);
+            }
+            break;
+
+		    case IDM_ABOUT: // Help -> About ...
 				MessageBox(hWnd, _T("About menu click"), _T("Debug"), MB_OK);
-			}
-		break;
-	}
+		    break;
 
-/*
-	HANDLE hFinder  = GetDlgItem(hWnd, IDC_STATIC3);
+        }
+    }
 
-	// click in finder tool
-	if(hFinder == (HANDLE)lParam){
-		SetCapture(hWnd);
-		isMouseCapture = TRUE;
-	}
-*/
 }
 
 
@@ -656,4 +693,40 @@ INT_PTR CALLBACK ProcessInfoDialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, L
     } 
 }
 
+
+
+HWND GetWindowByPoint(HWND hWnd, POINT point)
+{
+    HMENU hMenu = GetMenu(hWnd);
+
+    MENUITEMINFO menuItemInfo = {sizeof(MENUITEMINFO)};
+    menuItemInfo.fMask = MIIM_STATE;
+
+    if(!GetMenuItemInfo(hMenu, IDM_WINDOWFROMPOINT, FALSE, &menuItemInfo))
+    {
+        DWORD dwError = GetLastError();
+		_tprintf(_T("GetMenuItemInfo: dwError = %i \n"), dwError);
+		HPrint::printErrorMessage(dwError);
+
+        return WindowFromPoint(point);
+    }
+
+    HWND hSearchWnd = WindowFromPoint(point);
+    // _tprintf(_T("WindowFromPoint: hSearchWnd = 0x%X\n"), hSearchWnd);
+
+    if(menuItemInfo.fState & MFS_CHECKED || hSearchWnd == NULL){
+        return hSearchWnd;
+    }
+
+    WINDOWINFO wndInfo;
+	GetWindowInfo(hSearchWnd, &wndInfo);
+
+    POINT clientPoint;
+    clientPoint.x = point.x - wndInfo.rcClient.left;
+    clientPoint.y = point.y - wndInfo.rcClient.top;
+    hSearchWnd = ChildWindowFromPoint(hSearchWnd, clientPoint);
+    // _tprintf(_T("ChildWindowFromPoint: hSearchWnd = 0x%X\n"), hSearchWnd);
+
+    return hSearchWnd;
+}
 
