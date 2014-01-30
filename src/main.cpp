@@ -44,15 +44,15 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE, PTSTR pszCmdLine, int nCmdS
 	icc.dwICC  = ICC_WIN95_CLASSES | ICC_TAB_CLASSES;
 	InitCommonControlsEx(&icc);
 
-
+#ifdef _DEBUG
     AllocConsole();	
 	FILE *hf;
 	hf = _fdopen( _open_osfhandle((long)GetStdHandle(STD_OUTPUT_HANDLE), _O_TEXT | _O_WTEXT), "w");
 	// hf = fopen("E:\\debug.txt", "a+");
 	// fopen_s(&hf, "E:\\debug.txt", "a+");
 
-    *stdout = *stderr = *hf;    /* enable using _tprintf  */
-
+    *stdout = *stderr = *hf;    // enable using _tprintf
+#endif
 
 	DialogBox(hInstance, MAKEINTRESOURCE(IDD_MAIN), NULL, MainDialogProc);
 
@@ -80,7 +80,10 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE, PTSTR pszCmdLine, int nCmdS
         DeleteObject(hSight);
     }
 
+#ifdef _DEBUG
 	FreeConsole();
+#endif
+
 	CToolhelp::EnablePrivilege(SE_SECURITY_NAME, FALSE);     
     CToolhelp::EnablePrivilege(SE_DEBUG_NAME, FALSE);
 
@@ -363,10 +366,10 @@ void MainDialog_OnCommand(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         switch(wlwParam)
 	    {
             case IDM_EXIT:   // File -> Exit
-				MessageBox(hWnd, _T("Exit menu click"), _T("Debug"), MB_OK);
+                EndDialog(hWnd, uMsg);
 		    break;
 
-            case IDM_WINDOWFROMPOINT: // 
+            case IDM_WINDOWFROMPOINT: // Options -> Select control mode -> WindowFromPoint
             {
                 HMENU hMenu = GetMenu(hWnd);
                 CheckMenuItem(hMenu, IDM_CHILDWINDOWFROMPOINT, MF_UNCHECKED);
@@ -403,7 +406,7 @@ void MainDialog_OnCommand(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
             break;
 
-            case IDM_CHILDWINDOWFROMPOINT:
+            case IDM_CHILDWINDOWFROMPOINT: // Options -> Select control mode -> ChildWindowFromPoint
             {
                 HMENU hMenu = GetMenu(hWnd);
                 CheckMenuItem(hMenu, IDM_CHILDWINDOWFROMPOINT, MF_CHECKED);
@@ -412,7 +415,7 @@ void MainDialog_OnCommand(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             break;
 
 		    case IDM_ABOUT: // Help -> About ...
-				MessageBox(hWnd, _T("About menu click"), _T("Debug"), MB_OK);
+				MessageBox(hWnd, _T("WinInfo v0.5"), _T("About"), MB_OK| MB_ICONINFORMATION);
 		    break;
 
         }
