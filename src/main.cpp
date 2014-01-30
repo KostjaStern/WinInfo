@@ -330,7 +330,7 @@ void MainDialog_OnCommand(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	whwParam = HIWORD(wParam);
 	wlwParam = LOWORD(wParam);
 
-	_tprintf(_T("WM_COMMAND:  hWnd = %X , uMsg = %X , whwParam = %X , wlwParam = %X , lParam = %X\n"), hWnd, uMsg, whwParam, wlwParam, lParam);
+	// _tprintf(_T("WM_COMMAND:  hWnd = %X , uMsg = %X , whwParam = %X , wlwParam = %X , lParam = %X\n"), hWnd, uMsg, whwParam, wlwParam, lParam);
 
 	switch(wlwParam)
 	{
@@ -719,13 +719,27 @@ HWND GetWindowByPoint(HWND hWnd, POINT point)
     }
 
     WINDOWINFO wndInfo;
-	GetWindowInfo(hSearchWnd, &wndInfo);
-
+    HWND hParentWnd;
     POINT clientPoint;
-    clientPoint.x = point.x - wndInfo.rcClient.left;
-    clientPoint.y = point.y - wndInfo.rcClient.top;
-    hSearchWnd = ChildWindowFromPoint(hSearchWnd, clientPoint);
-    // _tprintf(_T("ChildWindowFromPoint: hSearchWnd = 0x%X\n"), hSearchWnd);
+
+    do
+    {
+        hParentWnd = hSearchWnd;
+	    GetWindowInfo(hParentWnd, &wndInfo);
+        
+        clientPoint.x = point.x - wndInfo.rcClient.left;
+        clientPoint.y = point.y - wndInfo.rcClient.top;
+        _tprintf(_T("clientPoint.x = %i , clientPoint.y = %i \n"), clientPoint.x, clientPoint.y);
+
+        hSearchWnd = ChildWindowFromPoint(hParentWnd, clientPoint);
+
+        _tprintf(_T("hSearchWnd = 0x%X\n"), hSearchWnd);
+        _tprintf(_T("hParentWnd = 0x%X\n"), hParentWnd);
+    }
+    while(hParentWnd != hSearchWnd);
+    
+
+    _tprintf(_T("ChildWindowFromPoint: hSearchWnd = 0x%X\n"), hSearchWnd);
 
     return hSearchWnd;
 }
