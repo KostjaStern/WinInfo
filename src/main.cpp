@@ -731,8 +731,9 @@ HWND GetWindowByPoint(HWND hWnd, POINT point)
         clientPoint.y = point.y - wndInfo.rcClient.top;
         _tprintf(_T("clientPoint.x = %i , clientPoint.y = %i \n"), clientPoint.x, clientPoint.y);
 
-        hSearchWnd = ChildWindowFromPoint(hParentWnd, clientPoint);
-
+        // hSearchWnd = ChildWindowFromPoint(hParentWnd, clientPoint);
+        hSearchWnd = RealChildWindowFromPoint(hParentWnd, clientPoint);
+        
         _tprintf(_T("hSearchWnd = 0x%X\n"), hSearchWnd);
         _tprintf(_T("hParentWnd = 0x%X\n"), hParentWnd);
     }
