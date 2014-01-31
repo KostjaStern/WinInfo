@@ -15,7 +15,7 @@ ProcessInfo::ProcessInfo(DWORD pID)
 	{
 		DWORD dwError = GetLastError();
 		_tprintf(_T("OpenProcess: dwError = %i\n"), dwError);
-		HPrint::printErrorMessage(dwError);
+		Debug::printErrorMessage(dwError);
 
 		fileName = new TCHAR[1];
 		fileName[0] = _T('\0');
@@ -32,7 +32,7 @@ ProcessInfo::ProcessInfo(DWORD pID)
 	{
 		DWORD dwError = GetLastError();
 		_tprintf(_T("GetModuleFileNameEx: dwError = %i\n"), dwError);
-		HPrint::printErrorMessage(dwError);
+		Debug::printErrorMessage(dwError);
 
 		fileName[0] = _T('\0');
 	}
@@ -102,7 +102,7 @@ BOOL ProcessInfo::GetProcessCmdLine(HANDLE hProcess, LPTSTR szCmdLine, DWORD Siz
 	{
         DWORD dwError = GetLastError();
 		_tprintf(_T("ReadProcessMemory (1): dwError = %i\n"), dwError);
-		HPrint::printErrorMessage(dwError);
+		Debug::printErrorMessage(dwError);
         return FALSE;
     }
 
@@ -113,7 +113,7 @@ BOOL ProcessInfo::GetProcessCmdLine(HANDLE hProcess, LPTSTR szCmdLine, DWORD Siz
 	{
         DWORD dwError = GetLastError();
 		_tprintf(_T("ReadProcessMemory (2): dwError = %i\n"), dwError);
-		HPrint::printErrorMessage(dwError);
+		Debug::printErrorMessage(dwError);
         return FALSE;
     }
 
@@ -123,7 +123,7 @@ BOOL ProcessInfo::GetProcessCmdLine(HANDLE hProcess, LPTSTR szCmdLine, DWORD Siz
 	{
         DWORD dwError = GetLastError();
 		_tprintf(_T("ReadProcessMemory (2): dwError = %i\n"), dwError);
-		HPrint::printErrorMessage(dwError);
+		Debug::printErrorMessage(dwError);
         return FALSE;
     }
 

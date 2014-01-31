@@ -7,13 +7,10 @@
 #include <stdio.h>
 
 
-class HPrint
+class Debug
 {
     public:
 		static void printErrorMessage(DWORD dwError);
-
-
-
 
 };
 

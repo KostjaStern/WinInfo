@@ -8,7 +8,7 @@
 
 #include "jeff\Toolhelp.h"
 
-#include "HPrint.h"
+#include "Debug.h"
 #include "Helper.h"
 
 #include "IWindow.h"

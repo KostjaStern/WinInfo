@@ -10,15 +10,12 @@
 #include <map>
 #include <vector>
 
-#include "HPrint.h"
+#include "Debug.h"
 #include "IWindow.h"
 #include "ProcessInfo.h"
 #include "tstring.h"
 
-/*
-http://msdn.microsoft.com/en-us/library/windows/desktop/ms633497%28v=vs.85%29.aspx (EnumWindows function)
-http://www.experts-exchange.com/Programming/Languages/CPP/A_655-How-to-provide-a-CALLBACK-function-into-a-C-class-object.html (How to provide a CALLBACK function into a C++ class object)
-*/
+
 
 using namespace std;
 

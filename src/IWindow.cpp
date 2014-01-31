@@ -57,8 +57,26 @@ IWindow::IWindow(HWND hWnd)
 	GetWindowRect(hWnd, &wndRect);
 	wndWidth  = wndRect.right - wndRect.left;
 	wndHeight = wndRect.bottom - wndRect.top;
-	wndPos.x  = wndRect.left;
-	wndPos.y  = wndRect.top;
+
+    if(hWndRoot == NULL)
+    {
+	    wndPos.x  = wndRect.left;
+	    wndPos.y  = wndRect.top;
+    }
+    else
+    {
+        /*
+        RECT rootWndRect;
+        GetWindowRect(hWndRoot, &rootWndRect);
+        wndPos.x  = wndRect.left - rootWndRect.left;
+        wndPos.y  = wndRect.top - rootWndRect.top;
+        */
+
+        WINDOWINFO rootWndInfo = {sizeof(WINDOWINFO)};
+        GetWindowInfo(hWndRoot, &rootWndInfo);
+        wndPos.x  = wndRect.left - rootWndInfo.rcClient.left;
+        wndPos.y  = wndRect.top - rootWndInfo.rcClient.top;
+    }
 
 	// int  ctrlID = GetDlgCtrlID(hWnd);
 	// LONG hInstance  = GetWindowLong(hWnd, GWL_HINSTANCE);
@@ -90,16 +108,6 @@ IWindow::IWindow(HWND hWnd)
 	// _tprintf(_T("dwProcessID = %i \n"), dwProcessID);
 	// _tprintf(_T("dwThreadID = %i \n"), dwThreadID);
 
-	hWndDC = GetWindowDC(hWnd);
-	hBufferDC = CreateCompatibleDC(hWndDC);
-	hWndBitmap = CreateCompatibleBitmap(hWndDC, wndWidth, wndHeight);
-	hWndBitmap = (HBITMAP)SelectObject(hBufferDC, hWndBitmap);
-
-	if(!BitBlt(hBufferDC, 0, 0, wndWidth, wndHeight, hWndDC, 0, 0, SRCCOPY)){
-		DWORD dwError = GetLastError();
-		_tprintf(_T("BitBlt: dwError = %i \n"), dwError);
-	}
-
 }
 
 
@@ -125,15 +133,15 @@ IWindow::~IWindow()
 
 void IWindow::selectWindow()
 {
-	/*
-	_tprintf(_T("selectWindow() \n"));
-	_tprintf(_T("wndWidth = %i \n"),  wndWidth);
-	_tprintf(_T("wndHeight = %i \n"), wndHeight);
-	_tprintf(_T("hWnd = 0x%X \n"), hWnd);
-	_tprintf(_T("hWndDC = 0x%X \n"), hWndDC);
-	_tprintf(_T("hBufferDC = 0x%X \n"), hBufferDC);
-	_tprintf(_T("rect.left = %i , rect.right = %i , rect.top = %i , rect.bottom = %i\n "), wndRect.left, wndRect.right, wndRect.top, wndRect.bottom);
-	*/
+    hWndDC = GetWindowDC(hWnd);
+	hBufferDC = CreateCompatibleDC(hWndDC);
+	hWndBitmap = CreateCompatibleBitmap(hWndDC, wndWidth, wndHeight);
+	hWndBitmap = (HBITMAP)SelectObject(hBufferDC, hWndBitmap);
+
+	if(!BitBlt(hBufferDC, 0, 0, wndWidth, wndHeight, hWndDC, 0, 0, SRCCOPY)){
+		DWORD dwError = GetLastError();
+		_tprintf(_T("BitBlt: dwError = %i \n"), dwError);
+	}
 
 	if(hWndDC != NULL)
 	{
@@ -152,8 +160,6 @@ void IWindow::selectWindow()
 
 void IWindow::deselectWindow()
 {
-	// _tprintf(_T("deselectWindow() \n"));
-
 	if(hBufferDC != NULL && hWndDC != NULL)
 	{
 		if(!BitBlt(hWndDC, 0, 0, wndWidth, wndHeight, hBufferDC, 0, 0, SRCCOPY)){

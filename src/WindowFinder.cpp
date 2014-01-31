@@ -6,6 +6,12 @@ stack<HWND> WindowFinder::childWnd = stack<HWND>();
 HWND WindowFinder::findWindow(HWND hWnd, POINT point)
 {
     HWND root = GetAncestor(hWnd, GA_ROOT);
+
+    if(root == NULL){
+        return NULL;
+    }
+
+
     HWND findWnd = NULL;
     int  wndSize = INT_MAX;
 
@@ -23,7 +29,7 @@ HWND WindowFinder::findWindow(HWND hWnd, POINT point)
         {
             DWORD dwError = GetLastError();
             _tprintf(_T("GetWindowRect: dwError = %i\n"), dwError);
-            HPrint::printErrorMessage(dwError);
+            Debug::printErrorMessage(dwError);
             continue;
         }
 

@@ -1,9 +1,9 @@
 
-#include "HPrint.h"
+#include "Debug.h"
 
 
 
-void HPrint::printErrorMessage(DWORD dwError)
+void Debug::printErrorMessage(DWORD dwError)
 {
 	HLOCAL hlocal = NULL;
     DWORD systemLocale = MAKELANGID(LANG_ENGLISH, SUBLANG_DEFAULT);

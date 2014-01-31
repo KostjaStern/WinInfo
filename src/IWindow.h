@@ -9,7 +9,7 @@
 #include <windows.h>
 #include <psapi.h>
 
-#include "HPrint.h"
+#include "Debug.h"
 #include "tstring.h"
 
 

@@ -35,8 +35,8 @@ IDR_MENU1 MENUEX
     {
         POPUP "Select control mode", 0, 0, 0
         {
-            MENUITEM "WindowFromPoint", IDM_WINDOWFROMPOINT, 0, MFS_CHECKED
-            MENUITEM "Find min size child window", IDM_CHILDWINDOWFROMPOINT, 0, 0
+            MENUITEM "WindowFromPoint", IDM_WINDOWFROMPOINT, 0, 0
+            MENUITEM "Find min size child window", IDM_CHILDWINDOWFROMPOINT, 0, MFS_CHECKED
         }
     }
     POPUP "Help", 0, 0, 0

@@ -140,7 +140,7 @@ INT_PTR MainDialog_OnInitDialog(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 	{
 		DWORD dwError = GetLastError();
 		_tprintf(_T("hWndSummInfo: dwError = %i\n"), dwError);
-		HPrint::printErrorMessage(dwError);
+		Debug::printErrorMessage(dwError);
 	}
 
 	HWND hWndTreeInfo = CreateWindowEx(0,
@@ -162,7 +162,7 @@ INT_PTR MainDialog_OnInitDialog(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 	{
 		DWORD dwError = GetLastError();
 		_tprintf(_T("hWndTreeInfo: dwError = %i\n"), dwError);
-		HPrint::printErrorMessage(dwError);
+		Debug::printErrorMessage(dwError);
 	}
 
 	HWND hBtn = CreateWindowEx(0,
@@ -183,7 +183,7 @@ INT_PTR MainDialog_OnInitDialog(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 	{
 		DWORD dwError = GetLastError();
 		_tprintf(_T("hBtn: dwError = %i\n"), dwError);
-		HPrint::printErrorMessage(dwError);
+		Debug::printErrorMessage(dwError);
 	}
 
 	treeWindows = new TreeControl(hWndTreeInfo);
@@ -207,7 +207,7 @@ void MainDialog_OnMouseMove(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		if(!GetCursorPos(&point)){
 			dwError = GetLastError();
 			_tprintf(_T("GetCursorPos: dwError = %i\n"), dwError);
-			HPrint::printErrorMessage(dwError);
+			Debug::printErrorMessage(dwError);
 		}
 
 		// hSearchWnd = WindowFromPoint(point);
@@ -481,7 +481,7 @@ INT_PTR CALLBACK MainDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 				if(!ReleaseCapture()){
 					dwError = GetLastError();
 				    _tprintf(_T("ReleaseCapture: dwError = %i\n"), dwError);
-				    HPrint::printErrorMessage(dwError);
+				    Debug::printErrorMessage(dwError);
 				}
 				isMouseCapture = FALSE;
 
@@ -591,7 +591,7 @@ INT_PTR CALLBACK CtrlInfoDialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
 						{
 							DWORD dwError = GetLastError();
 		                    _tprintf(_T("AttachThreadInput: dwError = %i \n"), dwError);
-							HPrint::printErrorMessage(dwError);
+							Debug::printErrorMessage(dwError);
 						}
 						else
 						{
@@ -624,11 +624,11 @@ INT_PTR CALLBACK ProcessInfoDialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, L
     { 
 	    case WM_INITDIALOG:
 	    {	
+            /*
 			_tprintf(_T("WM_INITDIALOG\n"));
 			_tprintf(_T("hwndDlg = 0x%X\n"), hwndDlg);
 			_tprintf(_T("lParam = 0x%X\n"), lParam);
-			_tprintf(_T("\n"));
-
+            */
 			HWND hPopupEdit = GetDlgItem(hwndDlg, IDC_EDIT1);
 			// IWindow *wndInfo = new IWindow((HWND)lParam);
 			// SetTextToEdit(hPopupEdit, wndInfo);
@@ -677,7 +677,7 @@ HWND GetWindowByPoint(HWND hWnd, POINT point)
     {
         DWORD dwError = GetLastError();
 		_tprintf(_T("GetMenuItemInfo: dwError = %i \n"), dwError);
-		HPrint::printErrorMessage(dwError);
+		Debug::printErrorMessage(dwError);
 
         return WindowFromPoint(point);
     }

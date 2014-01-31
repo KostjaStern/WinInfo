@@ -9,7 +9,7 @@
 #include <psapi.h>     // GetModuleFileNameEx
 #include <tchar.h>
 
-#include "HPrint.h"
+#include "Debug.h"
 
 class ProcessInfo
 {

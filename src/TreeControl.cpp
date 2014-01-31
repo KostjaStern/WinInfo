@@ -24,7 +24,7 @@ void TreeControl::reBuildTree()
 	if(!EnumChildWindows(NULL, addWndHandle, (LPARAM)this)){
 		DWORD dwError = GetLastError();
 		_tprintf(_T("EnumChildWindows: dwError = %i\n"), dwError);
-		HPrint::printErrorMessage(dwError);
+		Debug::printErrorMessage(dwError);
 	}
 
 	_tprintf(_T("hwndTree.size() = %i\n"), hwndTree->size());
