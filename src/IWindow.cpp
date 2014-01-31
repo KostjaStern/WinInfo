@@ -42,7 +42,9 @@ IWindow::IWindow(HWND hWnd)
 	hWndRoot   = GetAncestor(hWnd, GA_ROOT);
 	hWndParent = GetAncestor(hWnd, GA_PARENT);
 	
-	// _tprintf(_T("hWndRoot = 0x%X\n"), hWndRoot);
+	// _tprintf(_T("hWndRoot = 0x%08X\n"), hWndRoot);
+	
+
 	// _tprintf(_T("hWndParent = 0x%X\n"), hWndParent);
 
 	int strLen = (int)SendMessage(hWnd, WM_GETTEXTLENGTH, 0, 0) + 1;
@@ -58,7 +60,7 @@ IWindow::IWindow(HWND hWnd)
 	wndWidth  = wndRect.right - wndRect.left;
 	wndHeight = wndRect.bottom - wndRect.top;
 
-    if(hWndRoot == NULL)
+    if(hWndRoot == hWnd)
     {
 	    wndPos.x  = wndRect.left;
 	    wndPos.y  = wndRect.top;

@@ -17,11 +17,11 @@ void Helper::SetTextToEdit(HWND hWndOutput, IWindow* wnd)
 		wndSummText->append(_T("Class: %s\r\n"), rootWnd->getClassName());
 		wndSummText->append(_T("Position: (left = %i, top = %i)\r\n"), rootWnd->getWndPos().x, rootWnd->getWndPos().y);
 		wndSummText->append(_T("Size: (width = %i, height = %i)\r\n"), rootWnd->getWidth(), rootWnd->getHeight());
-		wndSummText->append(_T("Style: 0x%X\r\n"), rootWnd->getStyle());
+		wndSummText->append(_T("Style: 0x%08X\r\n"), rootWnd->getStyle());
 		Helper::addStyleInfo(rootWnd->getStyle(), wndSummText);
-		wndSummText->append(_T("ExStyle: 0x%X\r\n"), rootWnd->getExStyle());
+		wndSummText->append(_T("ExStyle: 0x%08X\r\n"), rootWnd->getExStyle());
 		Helper::addStyleExInfo(rootWnd->getExStyle(), wndSummText);
-		wndSummText->append(_T("Handle: 0x%X\r\n"), rootWnd->getHWND());
+		wndSummText->append(_T("Handle: 0x%08X\r\n"), rootWnd->getHWND());
 		wndSummText->append(_T("\r\n"));
 
 		delete rootWnd;
@@ -35,11 +35,11 @@ void Helper::SetTextToEdit(HWND hWndOutput, IWindow* wnd)
 		wndSummText->append(_T("Class: %s\r\n"), parentWnd->getClassName());
 		wndSummText->append(_T("Position: (left = %i, top = %i)\r\n"), parentWnd->getWndPos().x, parentWnd->getWndPos().y);
 		wndSummText->append(_T("Size: (width = %i, height = %i)\r\n"), parentWnd->getWidth(), parentWnd->getHeight());
-		wndSummText->append(_T("Style: 0x%X\r\n"), parentWnd->getStyle());
+		wndSummText->append(_T("Style: 0x%08X\r\n"), parentWnd->getStyle());
 		Helper::addStyleInfo(parentWnd->getStyle(), wndSummText);
-		wndSummText->append(_T("ExStyle: 0x%X\r\n"), parentWnd->getExStyle());
+		wndSummText->append(_T("ExStyle: 0x%08X\r\n"), parentWnd->getExStyle());
 		Helper::addStyleExInfo(parentWnd->getExStyle(), wndSummText);
-		wndSummText->append(_T("Handle: 0x%X\r\n"), parentWnd->getHWND());
+		wndSummText->append(_T("Handle: 0x%08X\r\n"), parentWnd->getHWND());
 		wndSummText->append(_T("\r\n"));
 
 		delete parentWnd;
@@ -51,11 +51,11 @@ void Helper::SetTextToEdit(HWND hWndOutput, IWindow* wnd)
 	wndSummText->append(_T("ID: %ld\r\n"), wnd->getID());
 	wndSummText->append(_T("Position: (left = %i, top = %i)\r\n"), wnd->getWndPos().x, wnd->getWndPos().y);
 	wndSummText->append(_T("Size: (width = %i, height = %i)\r\n"), wnd->getWidth(), wnd->getHeight());
-	wndSummText->append(_T("Style: 0x%X\r\n"), wnd->getStyle());
+	wndSummText->append(_T("Style: 0x%08X\r\n"), wnd->getStyle());
 	Helper::addStyleInfo(wnd->getStyle(), wndSummText);
-	wndSummText->append(_T("ExStyle: 0x%X\r\n"), wnd->getExStyle());
+	wndSummText->append(_T("ExStyle: 0x%08X\r\n"), wnd->getExStyle());
 	Helper::addStyleExInfo(wnd->getExStyle(), wndSummText);
-	wndSummText->append(_T("Handle: 0x%X\r\n"), wnd->getHWND());
+	wndSummText->append(_T("Handle: 0x%08X\r\n"), wnd->getHWND());
 	wndSummText->append(_T("\r\n"));
 	wndSummText->append(_T("\r\n"));
 	wndSummText->append(_T("ThreadID: %i\r\n"), wnd->getThreadID());
