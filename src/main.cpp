@@ -215,20 +215,20 @@ void MainDialog_OnMouseMove(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 		if(hSearchWnd != NULL  && (lastWnd == NULL || hSearchWnd != lastWnd->getHWND()))
 		{
-			_tprintf(_T("hSearchWnd = 0x%X\n"), hSearchWnd);
+			// _tprintf(_T("hSearchWnd = 0x%X\n"), hSearchWnd);
 
 			if(lastWnd != NULL){
-				_tprintf(_T("lastWnd->deselectWindow()\n"));
+				// _tprintf(_T("lastWnd->deselectWindow()\n"));
 				lastWnd->deselectWindow();
 
-				_tprintf(_T("delete lastWnd\n"));
+				// _tprintf(_T("delete lastWnd\n"));
 				delete lastWnd; 
 			}
 					
-			_tprintf(_T("new IWindow(hSearchWnd)\n"));
+			// _tprintf(_T("new IWindow(hSearchWnd)\n"));
 			lastWnd = new IWindow(hSearchWnd);
-			_tprintf(_T("lastWnd->getHWND() = 0x%X\n"), lastWnd->getHWND());
-			_tprintf(_T("SetTextToEdit\n"));
+			// _tprintf(_T("lastWnd->getHWND() = 0x%X\n"), lastWnd->getHWND());
+			// _tprintf(_T("SetTextToEdit\n"));
 
 			// _tprintf(_T("hWndSummInfo = 0x%X\n"), hWndSummInfo);
 			// _tprintf(_T("hWndSummInfo1 = 0x%X\n"), GetDlgItem(hWnd, WND_SUMM_INFO_ID));
@@ -352,7 +352,7 @@ void MainDialog_OnCommand(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             HWND hFinderTool = GetDlgItem(hWnd, IDC_STATIC3);
             SendMessage(hFinderTool, STM_SETIMAGE, (WPARAM)IMAGE_BITMAP, (LPARAM)hBitmapWnd);
             hSight = SetCursor(hSight);
-            _tprintf(_T("hSight = 0x%X\n"), hSight);
+            // _tprintf(_T("hSight = 0x%X\n"), hSight);
         }
         break;
 	}
@@ -371,35 +371,6 @@ void MainDialog_OnCommand(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 HMENU hMenu = GetMenu(hWnd);
                 CheckMenuItem(hMenu, IDM_CHILDWINDOWFROMPOINT, MF_UNCHECKED);
                 CheckMenuItem(hMenu, IDM_WINDOWFROMPOINT, MF_CHECKED);
-
-                MENUITEMINFO menuItemInfo = {sizeof(MENUITEMINFO)};
-                MENUITEMINFO menuItemInfo1 = {sizeof(MENUITEMINFO)};
-
-                menuItemInfo.fMask = MIIM_STATE | MIIM_ID;
-                if(GetMenuItemInfo(hMenu, IDM_WINDOWFROMPOINT, FALSE, &menuItemInfo))
-                {
-                    _tprintf(_T("IDM_WINDOWFROMPOINT: menuItemInfo.wID = %i\n"), menuItemInfo.wID);
-                    _tprintf(_T("IDM_WINDOWFROMPOINT: menuItemInfo.fState = 0x%X\n"), menuItemInfo.fState);
-                    if(menuItemInfo.fState & MFS_CHECKED){
-                        _tprintf(_T("MFS_CHECKED\n"));
-                    }
-                    if(menuItemInfo.fState & MFS_UNCHECKED){
-                        _tprintf(_T("MFS_UNCHECKED\n"));
-                    }
-                }
-                
-                menuItemInfo1.fMask = MIIM_STATE | MIIM_ID;
-                if(GetMenuItemInfo(hMenu, IDM_CHILDWINDOWFROMPOINT, FALSE, &menuItemInfo1))
-                {
-                    _tprintf(_T("IDM_CHILDWINDOWFROMPOINT: menuItemInfo1.wID = %i\n"), menuItemInfo1.wID);
-                    _tprintf(_T("IDM_CHILDWINDOWFROMPOINT: menuItemInfo1.fState = 0x%X\n"), menuItemInfo1.fState);
-                    if(menuItemInfo1.fState & MFS_CHECKED){
-                        _tprintf(_T("MFS_CHECKED\n"));
-                    }
-                    if(menuItemInfo1.fState & MFS_UNCHECKED){
-                        _tprintf(_T("MFS_UNCHECKED\n"));
-                    }
-                }
             }
             break;
 
@@ -517,7 +488,7 @@ INT_PTR CALLBACK MainDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
                 HWND hFinderTool = GetDlgItem(hWnd, IDC_STATIC3);
                 SendMessage(hFinderTool, STM_SETIMAGE, (WPARAM)IMAGE_BITMAP, (LPARAM)hBitmapWndSight);
                 hSight = SetCursor(hSight);
-                _tprintf(_T("hSight = 0x%X\n"), hSight);
+                // _tprintf(_T("hSight = 0x%X\n"), hSight);
 			}
 			return TRUE;
 		break;
@@ -718,30 +689,6 @@ HWND GetWindowByPoint(HWND hWnd, POINT point)
         return hSearchWnd;
     }
 
-    WINDOWINFO wndInfo;
-    HWND hParentWnd;
-    POINT clientPoint;
-
-    do
-    {
-        hParentWnd = hSearchWnd;
-	    GetWindowInfo(hParentWnd, &wndInfo);
-        
-        clientPoint.x = point.x - wndInfo.rcClient.left;
-        clientPoint.y = point.y - wndInfo.rcClient.top;
-        _tprintf(_T("clientPoint.x = %i , clientPoint.y = %i \n"), clientPoint.x, clientPoint.y);
-
-        // hSearchWnd = ChildWindowFromPoint(hParentWnd, clientPoint);
-        hSearchWnd = RealChildWindowFromPoint(hParentWnd, clientPoint);
-        
-        _tprintf(_T("hSearchWnd = 0x%X\n"), hSearchWnd);
-        _tprintf(_T("hParentWnd = 0x%X\n"), hParentWnd);
-    }
-    while(hParentWnd != hSearchWnd);
-    
-
-    _tprintf(_T("ChildWindowFromPoint: hSearchWnd = 0x%X\n"), hSearchWnd);
-
-    return hSearchWnd;
+    return WindowFinder::findWindow(hSearchWnd, point);
 }
 

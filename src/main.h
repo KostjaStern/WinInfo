@@ -13,7 +13,7 @@
 
 #include "IWindow.h"
 #include "TreeControl.h"
-
+#include "WindowFinder.h"
 
 #include <windowsx.h>
 #include <commctrl.h>

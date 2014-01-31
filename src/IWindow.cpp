@@ -152,7 +152,7 @@ void IWindow::selectWindow()
 
 void IWindow::deselectWindow()
 {
-	_tprintf(_T("deselectWindow() \n"));
+	// _tprintf(_T("deselectWindow() \n"));
 
 	if(hBufferDC != NULL && hWndDC != NULL)
 	{
