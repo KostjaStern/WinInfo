@@ -1,4 +1,7 @@
-
+/******************************************************************************
+Module:  main.cpp
+Notices: Copyright (c) 2014 Kostja Stern
+******************************************************************************/
 
 #include "main.h"
 
@@ -51,9 +54,6 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE, PTSTR pszCmdLine, int nCmdS
 	DialogBox(hInstance, MAKEINTRESOURCE(IDD_MAIN), NULL, MainDialogProc);
 
 
-//	_tprintf(_T("end prog ..."));
-//	Sleep(2000);
-
 	if(treeWindows != NULL){
 	    delete treeWindows;
 	}
@@ -87,7 +87,7 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE, PTSTR pszCmdLine, int nCmdS
 
 INT_PTR MainDialog_OnInitDialog(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	_tprintf(_T("WM_INITDIALOG\n"));
+	// _tprintf(_T("WM_INITDIALOG\n"));
 
 	// RECT wndRect;
     // GetClientRect(hWnd, &wndRect);
@@ -104,7 +104,7 @@ INT_PTR MainDialog_OnInitDialog(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 
 	RECT tabRect;
     GetClientRect(hTabControl, &tabRect);
-	_tprintf(_T("tabRect.bottom = %i , tabRect.left = %i , tabRect.right = %i , tabRect.top = %i \n"), tabRect.bottom, tabRect.left, tabRect.right, tabRect.top);
+	// _tprintf(_T("tabRect.bottom = %i , tabRect.left = %i , tabRect.right = %i , tabRect.top = %i \n"), tabRect.bottom, tabRect.left, tabRect.right, tabRect.top);
 
 	int nTabHeight = tabRect.bottom; // 319
 	int nTabWidth  = tabRect.right;  // 407
@@ -118,7 +118,7 @@ INT_PTR MainDialog_OnInitDialog(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 	TabCtrl_InsertItem(hTabControl, 1, &ti);
 	TabCtrl_SetCurSel(hTabControl, 0);
 
-	_tprintf(_T("hTabControl = 0x%X\n"), hTabControl);
+	// _tprintf(_T("hTabControl = 0x%08X\n"), hTabControl);
 
 	HMODULE hModule = GetModuleHandle(NULL);
 
@@ -157,7 +157,7 @@ INT_PTR MainDialog_OnInitDialog(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 								       NULL
 							          );
 
-	_tprintf(_T("hWndTreeInfo = 0x%X\n"), hWndTreeInfo);
+	// _tprintf(_T("hWndTreeInfo = 0x%08X\n"), hWndTreeInfo);
 	if(hWndTreeInfo == 0)
 	{
 		DWORD dwError = GetLastError();
@@ -304,7 +304,7 @@ void MainDialog_OnNotify(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					
 					int tabId = TabCtrl_GetCurSel(lpNmHdr->hwndFrom);
 					
-					_tprintf(_T("tabId = %i\n"), tabId);
+					// _tprintf(_T("tabId = %i\n"), tabId);
 					if(tabId == 0)
 					{
 						ShowWindow(hWndSummInfo, SW_HIDE);
@@ -383,7 +383,7 @@ void MainDialog_OnCommand(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             break;
 
 		    case IDM_ABOUT: // Help -> About ...
-				MessageBox(hWnd, _T("WinInfo v0.5"), _T("About"), MB_OK| MB_ICONINFORMATION);
+				MessageBox(hWnd, _T("WinInfo v1.0"), _T("About"), MB_OK| MB_ICONINFORMATION);
 		    break;
 
         }
@@ -410,8 +410,9 @@ void MainDialog_OnSize(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	_tprintf(_T("baseunitX = %i \n"), baseunitX);
 	_tprintf(_T("baseunitY = %i \n"), baseunitY);
 
-	int pixelX = MulDiv(baseunitX, 280, 4);
+	int pixelX = MulDiv(baseunitX, 280, 4);  // but I get the incorrect size !?
     int pixelY = MulDiv(baseunitY, 300, 8);
+
 
 	_tprintf(_T("pixelX = %i \n"), pixelX);
 	_tprintf(_T("pixelY = %i \n"), pixelY);
@@ -485,6 +486,12 @@ INT_PTR CALLBACK MainDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 				}
 				isMouseCapture = FALSE;
 
+				if(lastWnd != NULL){
+					lastWnd->deselectWindow();
+					delete lastWnd; 
+					lastWnd = NULL;
+				}
+
                 HWND hFinderTool = GetDlgItem(hWnd, IDC_STATIC3);
                 SendMessage(hFinderTool, STM_SETIMAGE, (WPARAM)IMAGE_BITMAP, (LPARAM)hBitmapWndSight);
                 hSight = SetCursor(hSight);
@@ -526,7 +533,7 @@ INT_PTR CALLBACK MainDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 		break;
 
 		case WM_COMMAND:
-			// _tprintf(_T("WM_COMMAND: hWnd = 0x%X , uMsg = %i , wParam = %i , lParam = %i \n"), hWnd, uMsg, wParam, lParam);
+			// _tprintf(_T("WM_COMMAND: hWnd = 0x%08X , uMsg = %i , wParam = %i , lParam = %i \n"), hWnd, uMsg, wParam, lParam);
 			MainDialog_OnCommand(hWnd, uMsg, wParam, lParam);
 			return TRUE;
 		break;
@@ -595,9 +602,12 @@ INT_PTR CALLBACK CtrlInfoDialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
 						}
 						else
 						{
-							HWND prevWnd = SetFocus(wndInfo->getHWND());
-							_tprintf(_T("prevWnd = 0x%X\n"), prevWnd);
+							SetFocus(wndInfo->getHWND());
+							// HWND prevWnd = SetFocus(wndInfo->getHWND());
+							// _tprintf(_T("prevWnd = 0x%08X\n"), prevWnd);
 							wndInfo->selectWindow();
+							Sleep(2000);
+							wndInfo->deselectWindow();
 						}
 
 						delete wndInfo;

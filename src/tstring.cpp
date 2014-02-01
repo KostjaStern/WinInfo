@@ -1,5 +1,9 @@
+/******************************************************************************
+Module:  TString.cpp
+Notices: Copyright (c) 2014 Kostja Stern
+******************************************************************************/
 
-#include "tstring.h"
+#include "TString.h"
 
 TString::TString()
 {

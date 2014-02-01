@@ -11,4 +11,5 @@ Release/
 *.user
 *.sln.docstates
 *.opensdf
-
+*.wixobj
+*.wixpdb

@@ -1,3 +1,7 @@
+/******************************************************************************
+Module:  IWindow.cpp
+Notices: Copyright (c) 2014 Kostja Stern
+******************************************************************************/
 
 #include "IWindow.h"
 #include "ProcessInfo.h"
@@ -43,8 +47,6 @@ IWindow::IWindow(HWND hWnd)
 	hWndParent = GetAncestor(hWnd, GA_PARENT);
 	
 	// _tprintf(_T("hWndRoot = 0x%08X\n"), hWndRoot);
-	
-
 	// _tprintf(_T("hWndParent = 0x%X\n"), hWndParent);
 
 	int strLen = (int)SendMessage(hWnd, WM_GETTEXTLENGTH, 0, 0) + 1;
@@ -67,27 +69,18 @@ IWindow::IWindow(HWND hWnd)
     }
     else
     {
-        /*
-        RECT rootWndRect;
-        GetWindowRect(hWndRoot, &rootWndRect);
-        wndPos.x  = wndRect.left - rootWndRect.left;
-        wndPos.y  = wndRect.top - rootWndRect.top;
-        */
-
         WINDOWINFO rootWndInfo = {sizeof(WINDOWINFO)};
         GetWindowInfo(hWndRoot, &rootWndInfo);
         wndPos.x  = wndRect.left - rootWndInfo.rcClient.left;
         wndPos.y  = wndRect.top - rootWndInfo.rcClient.top;
     }
 
-	// int  ctrlID = GetDlgCtrlID(hWnd);
-	// LONG hInstance  = GetWindowLong(hWnd, GWL_HINSTANCE);
 	wndID  = GetWindowLong(hWnd, GWL_ID);
 	
 	className = new TCHAR[MAX_WND_CLASSNAME + 1];
 	if(!GetClassName(hWnd, className, MAX_WND_CLASSNAME + 1))
 	{
-		DWORD dwError = GetLastError();
+		dwError = GetLastError();
 		_tprintf(_T("GetClassName: dwError = %i \n"), dwError);
 
 	    className[0] = _T('\0');
@@ -96,7 +89,7 @@ IWindow::IWindow(HWND hWnd)
 	realClassName = new TCHAR[MAX_WND_CLASSNAME + 1];
 	if(!RealGetWindowClass(hWnd, realClassName, MAX_WND_CLASSNAME + 1))
 	{
-		DWORD dwError = GetLastError();
+		dwError = GetLastError();
 		_tprintf(_T("RealGetWindowClass: dwError = %i \n"), dwError);
 
 	    realClassName[0] = _T('\0');
@@ -106,9 +99,6 @@ IWindow::IWindow(HWND hWnd)
 	// _tprintf(_T("RealGetWindowClass: realClassName = 0x%X\n"), realClassName);
 
 	dwThreadID = GetWindowThreadProcessId(hWnd, &dwProcessID);
-
-	// _tprintf(_T("dwProcessID = %i \n"), dwProcessID);
-	// _tprintf(_T("dwThreadID = %i \n"), dwThreadID);
 
 }
 

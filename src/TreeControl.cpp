@@ -1,3 +1,7 @@
+/******************************************************************************
+Module:  TreeControl.cpp
+Notices: Copyright (c) 2014 Kostja Stern
+******************************************************************************/
 
 #include "TreeControl.h"
 
@@ -6,19 +10,18 @@ TreeControl::TreeControl(HWND hWnd)
 {
 	this->hWnd = hWnd;
 
-	_tprintf(_T("TreeControl: hwnd = 0x%X\n"), hWnd);
+	// _tprintf(_T("TreeControl: hwnd = 0x%X\n"), hWnd);
 }
 
 
 TreeControl::~TreeControl()
 {
-
 }
 
 
 void TreeControl::reBuildTree()
 {
-	_tprintf(_T("reBuildTree\n"));
+	// _tprintf(_T("reBuildTree\n"));
 	hwndTree = new multimap<HWND, HWND>();
 
 	if(!EnumChildWindows(NULL, addWndHandle, (LPARAM)this)){
@@ -27,12 +30,7 @@ void TreeControl::reBuildTree()
 		Debug::printErrorMessage(dwError);
 	}
 
-	_tprintf(_T("hwndTree.size() = %i\n"), hwndTree->size());
-	
 	BOOL res = addParentChildPairsToWndTree();
-	_tprintf(_T("res = %i\n"), res);
-	_tprintf(_T("hwndTree.size() = %i\n"), hwndTree->size());
-	_tprintf(_T("hwndTree.count(0) = %i\n"), hwndTree->count(0));
 	
 	TreeView_DeleteAllItems(this->hWnd);
 	buildTree(0, TVI_ROOT, 1);
@@ -164,7 +162,6 @@ TreeItem  TreeControl::getSelectedItem()
 		level++;
 	}
 
-	_tprintf(_T("level = %i\n"), level);
 
 	TVITEM tvItem;
     tvItem.mask = TVIF_PARAM | TVIF_HANDLE;
@@ -220,7 +217,6 @@ BOOL TreeControl::addParentChildPairsToWndTree()
 
 	for (multimap<HWND, HWND>::iterator it = hwndTree->begin(); it != hwndTree->end(); ++it)
 	{
-		// cout << "  [" << it->first << ", " << it->second << "]" << endl;
 		// _tprintf(_T(" [(%i, %i), (%i, %i)]\n"), it->first->getM1(), it->first->getM2(), it->second->getM1(), it->second->getM2());
 		HWND hWnd = it->first;
 
@@ -231,7 +227,7 @@ BOOL TreeControl::addParentChildPairsToWndTree()
 
 			if(!this->isPairExist(p))
 			{
-				_tprintf(_T(" (0x%X, 0x%X)\n"), hpWnd, hWnd);
+				// _tprintf(_T(" (0x%08X, 0x%08X)\n"), hpWnd, hWnd);
 				this->hwndTree->insert(p);
 				result = TRUE;
 			}
@@ -250,12 +246,7 @@ BOOL TreeControl::addParentChildPairsToWndTree()
 BOOL CALLBACK TreeControl::addWndHandle(HWND hWnd, LPARAM lParam)
 {
 	addToWndTree(hWnd, (TreeControl*)lParam);
-
-	if(!EnumChildWindows(hWnd, addChildWndHandle, lParam)){
-//		DWORD dwError = GetLastError();
-//		_tprintf(_T("dwError = %i\n"), dwError);
-//		Helper::printErrorMessage(dwError);
-	}
+	EnumChildWindows(hWnd, addChildWndHandle, lParam);
 
 	return TRUE;
 }

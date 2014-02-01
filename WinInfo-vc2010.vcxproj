@@ -79,7 +79,7 @@
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\ProcessInfo.cpp" />
     <ClCompile Include="src\TreeControl.cpp" />
-    <ClCompile Include="src\tstring.cpp" />
+    <ClCompile Include="src\TString.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Helper.h" />
@@ -91,7 +91,7 @@
     <ClInclude Include="src\ProcessInfo.h" />
     <ClInclude Include="src\res\resource.h" />
     <ClInclude Include="src\TreeControl.h" />
-    <ClInclude Include="src\tstring.h" />
+    <ClInclude Include="src\TString.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="src\res\wininfo.rc" />

@@ -1,0 +1,54 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
+    <?define ProductName="WinInfo" ?>
+    <?define ProductVersion="1.0" ?>
+	<?define SrcFolder="E:\my_CPP\WinInfo\bin\xp\" ?>
+    <?define ProductCode="11DF204D-CF47-4A31-B994-D01A13ADA437"?>
+    <?define UpgradeCode="75C443B3-BDB5-4DF4-94E9-792C55D13563"?>
+    <?define Manufacturer="Kostja Stern"?>
+    <?define Language="1033"?>
+    <?define CodePage="1252"?>
+
+    
+
+    <Product Id='$(var.ProductCode)' Name='$(var.ProductName)' UpgradeCode='$(var.UpgradeCode)'
+             Language='$(var.Language)' Codepage='$(var.CodePage)' Version='$(var.ProductVersion)' 
+             Manufacturer='$(var.Manufacturer)'>
+
+        <Package Id='*' Keywords='Installer' Description="$(var.ProductName) $(var.ProductVersion) Installer"
+                 Comments='$(var.ProductName) comment bla bla bla' Manufacturer='$(var.Manufacturer)'
+                 InstallerVersion='100' Languages='$(var.Language)' Compressed='yes' SummaryCodepage='$(var.CodePage)' />
+
+		<Media Id='1' Cabinet='media1.cab' EmbedCab='yes'/>
+		
+		<Directory Id='TARGETDIR' Name='SourceDir'>
+			<Directory Id='ProgramFilesFolder' Name='PFiles'>
+				<Directory Id='INSTALLLOCATION' Name='$(var.ProductName)' FileSource="$(var.SrcFolder)">
+					<Component Id='WinInfoEXE' Guid='81E7DD0A-FA50-4882-AD10-DE1082AD9EC0'>
+						<File Id='wininfo' Name='WinInfo.exe' KeyPath='yes'/>
+					</Component>
+
+					<Component Id='msvcp100DLL' Guid='667300F1-70AF-4488-839F-2CBD1109E72C'>
+						<File Id='msvcp100' Name='msvcp100.dll' />
+					</Component>
+
+					<Component Id='msvcr100DLL' Guid='2274EBCA-5095-43CB-8C4E-A225D00F94CF'>
+						<File Id='msvcr100' Name='msvcr100.dll' />
+					</Component>
+				</Directory>
+			</Directory>
+		</Directory>
+
+
+        <Feature Id='ProductFeature' Title='WinInfo Feature' Level='1'>
+            <ComponentRef Id='WinInfoEXE' />
+            <ComponentRef Id='msvcp100DLL' />
+            <ComponentRef Id='msvcr100DLL' />
+        </Feature>
+
+        <WixVariable Id="WixUILicenseRtf" Overridable="yes" Value="license.rtf"/>
+        <Property Id="WIXUI_INSTALLDIR" Value="INSTALLLOCATION" ></Property>
+        <UIRef Id="WixUI_InstallDir"/>
+        <!-- <UIRef Id="WixUI_Mondo"/> -->
+    </Product>
+</Wix>

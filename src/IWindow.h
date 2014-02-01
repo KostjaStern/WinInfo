@@ -1,8 +1,7 @@
-
-/*
-    http://stackoverflow.com/questions/3246663/how-to-get-the-window-class-name-and-id-from-hwnd (How to get the Window Class Name and Id from HWND?)
-    http://msdn.microsoft.com/en-us/library/windows/desktop/ms633584%28v=vs.85%29.aspx           (GetWindowLong function)
-*/
+/******************************************************************************
+Module:  IWindow.h
+Notices: Copyright (c) 2014 Kostja Stern
+******************************************************************************/
 
 #pragma once
 
@@ -10,7 +9,7 @@
 #include <psapi.h>
 
 #include "Debug.h"
-#include "tstring.h"
+#include "TString.h"
 
 
 // http://msdn.microsoft.com/en-us/library/windows/desktop/ms633577%28v=vs.85%29.aspx (WNDCLASSEX structure)
@@ -55,7 +54,7 @@ class IWindow
 		LONG    wndID;     // the identifier of the window
 
 		RECT    wndRect;
-		POINT   wndPos;    /* left upper corner  */
+		POINT   wndPos;    /* the left upper corner of window */
 		int     wndWidth;
 		int     wndHeight;
 

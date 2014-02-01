@@ -1,4 +1,7 @@
-
+/******************************************************************************
+Module:  TreeControl.h
+Notices: Copyright (c) 2014 Kostja Stern
+******************************************************************************/
 
 #pragma once
 
@@ -13,7 +16,7 @@
 #include "Debug.h"
 #include "IWindow.h"
 #include "ProcessInfo.h"
-#include "tstring.h"
+#include "TString.h"
 
 
 
@@ -58,7 +61,6 @@ class TreeControl
 		BOOL addParentChildPairsToWndTree();
 		void buildTree(HWND hWnd, HTREEITEM parent, int level);
 };
-
 
 
 
