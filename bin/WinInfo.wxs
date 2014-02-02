@@ -2,7 +2,7 @@
 <Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
     <?define ProductName="WinInfo" ?>
     <?define ProductVersion="1.0" ?>
-	<?define SrcFolder="E:\my_CPP\WinInfo\bin\xp\" ?>
+	<?define SrcFolder=".\xp\" ?>
     <?define ProductCode="11DF204D-CF47-4A31-B994-D01A13ADA437"?>
     <?define UpgradeCode="75C443B3-BDB5-4DF4-94E9-792C55D13563"?>
     <?define Manufacturer="Kostja Stern"?>
@@ -37,13 +37,44 @@
 					</Component>
 				</Directory>
 			</Directory>
+			<Directory Id="ProgramMenuFolder">
+				<Directory Id="ApplicationProgramsFolder" Name="$(var.ProductName)">
+					<Component Id="ApplicationShortcutWinInfo" Guid="e22c82b8-1e38-4d21-a7ef-af0f11fd27de">
+					    <Shortcut Id="ShortcutWinInfo"
+						    Name="WinInfo"
+						    Description="$(var.ProductName)"
+						    Target="[INSTALLLOCATION]WinInfo.exe"
+						    WorkingDirectory="INSTALLLOCATION"/>
+					    <RemoveFolder Id="ApplicationProgramsFolder" On="uninstall"/>
+					    <RegistryValue Root="HKCU" Key="Software\$(var.ProductName)" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+					</Component>
+					<Component Id="UninstallShortcutComponent" Guid="dc538ee7-abc8-4c4f-beb9-9ab61cacd2f7">
+                        <RegistryKey Root="HKCU" Key="Software\$(var.ProductName)\Uninstall">
+                            <RegistryValue Value="$(var.ProductName)"
+                                           Type="string"
+                                           KeyPath="yes" />
+                        </RegistryKey>
+
+                        <Shortcut Id="UninstallProduct"
+                                  Name="Uninstall $(var.ProductName)"
+                                  Target="[System64Folder]msiexec.exe"
+                                  Arguments="/x [ProductCode]"
+                                  Directory="ApplicationProgramsFolder"
+                                  Description="Uninstalls $(var.ProductName)" />
+
+                        <RemoveFolder Id="RemoveShorcutFolder" On="uninstall" />
+                    </Component>
+				</Directory>
+			</Directory>
 		</Directory>
 
-
+		
         <Feature Id='ProductFeature' Title='WinInfo Feature' Level='1'>
             <ComponentRef Id='WinInfoEXE' />
             <ComponentRef Id='msvcp100DLL' />
             <ComponentRef Id='msvcr100DLL' />
+			<ComponentRef Id="ApplicationShortcutWinInfo" />
+			<ComponentRef Id="UninstallShortcutComponent" />
         </Feature>
 
         <WixVariable Id="WixUILicenseRtf" Overridable="yes" Value="license.rtf"/>

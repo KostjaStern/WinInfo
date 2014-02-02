@@ -74,16 +74,17 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\Helper.cpp" />
-    <ClCompile Include="src\HPrint.cpp" />
+    <ClCompile Include="src\Debug.cpp" />
     <ClCompile Include="src\IWindow.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\ProcessInfo.cpp" />
     <ClCompile Include="src\TreeControl.cpp" />
     <ClCompile Include="src\TString.cpp" />
+    <ClCompile Include="src\WindowFinder.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Helper.h" />
-    <ClInclude Include="src\HPrint.h" />
+    <ClInclude Include="src\Debug.h" />
     <ClInclude Include="src\IWindow.h" />
     <ClInclude Include="src\jeff\CmnHdr.h" />
     <ClInclude Include="src\jeff\Toolhelp.h" />
@@ -92,6 +93,7 @@
     <ClInclude Include="src\res\resource.h" />
     <ClInclude Include="src\TreeControl.h" />
     <ClInclude Include="src\TString.h" />
+    <ClInclude Include="src\WindowFinder.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="src\res\wininfo.rc" />

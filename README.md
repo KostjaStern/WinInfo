@@ -4,6 +4,9 @@ WinInfo
 Tool for get information from window like Spy++ or [AutoIt Window Information Tool]
 (https://www.autoitscript.com/autoit3/docs/intro/au3spy.htm "AutoIt Window Information Tool")
 
+You can download WinInfo installer [here](/bin/WinInfo.msi)
+
+
 Using the WinInfo Tool you can move your mouse around the window you are interested in and 
 you will be given information of the control that is currently under your mouse.
 Also you can found control window browse the tree in "All Windows" tab.
