@@ -1,13 +1,10 @@
 WinInfo
 =======
 
-Tool for get information from window like Spy++ or [AutoIt Window Information Tool]
-(https://www.autoitscript.com/autoit3/docs/intro/au3spy.htm "AutoIt Window Information Tool")
+This tool provides window information similar to **Spy++** or the [AutoIt Window Information Tool](https://www.autoitscript.com/autoit3/docs/intro/au3spy.htm "AutoIt Window Information Tool")
 
-
-Using the WinInfo Tool you can move your mouse around the window you are interested in and 
-you will be given information of the control that is currently under your mouse.
-Also you can found control window browse the tree in "All Windows" tab.
+Using WinInfo, move your mouse over the target window to see details about the control currently under the cursor.
+You can also locate a control by browsing the tree in the *All Windows* tab.
 
 ![Main WinIfo window](/img/main_wnd.png)
 
@@ -28,5 +25,3 @@ Information that can be obtained includes:
 
 ![Main WinIfo window](/img/main_wnd2.png)
 
-
-> Sorry for my english.
